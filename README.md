@@ -1,0 +1,2 @@
+# TechTrio
+Agentic AI Project
