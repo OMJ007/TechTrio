@@ -85,21 +85,24 @@ export default function DashboardPage() {
     router.replace("/login");
   };
 
+  // Mobile tab navigation state
+  const [activeTab, setActiveTab] = useState<"overview" | "transactions" | "advisor">("overview");
+
   if (!token) return null;
 
   return (
-    <div className="min-h-screen bg-surface-950 text-slate-100 bg-radial-gradient">
+    <div className="min-h-screen bg-surface-950 text-slate-100 bg-radial-gradient pb-safe">
       {/* ── Header ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-surface-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600/20 border border-brand-500/30 text-brand-400">
-              <Sparkles size={20} />
+      <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-surface-950/90 backdrop-blur-xl pt-safe">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-brand-600/20 border border-brand-500/30 text-brand-400 shrink-0">
+              <Sparkles size={18} />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
                 <span>Xpense</span>
-                <span className="rounded bg-brand-600/20 px-1.5 py-0.5 text-xs font-semibold text-brand-400 border border-brand-500/30">
+                <span className="rounded bg-brand-600/20 px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold text-brand-400 border border-brand-500/30">
                   AI
                 </span>
               </h1>
@@ -109,35 +112,70 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="primary"
               size="sm"
-              leftIcon={<Upload size={16} />}
+              leftIcon={<Upload size={15} />}
               onClick={() => setOcrOpen(true)}
+              className="px-2.5 py-1.5 sm:px-3 text-xs"
             >
-              Upload Receipt
+              <span className="hidden xs:inline">Upload </span>Receipt
             </Button>
 
             <div className="h-4 w-px bg-slate-800" />
 
             <button
               onClick={handleLogout}
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Sign out"
             >
               <LogOut size={18} />
             </button>
           </div>
         </div>
+
+        {/* ── Mobile Tab Bar (< lg screens) ──────────────────── */}
+        <div className="flex lg:hidden border-t border-slate-800/60 bg-surface-900/60 px-3 py-1.5 gap-1 overflow-x-auto touch-scrolling scrollbar-none">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-center ${
+              activeTab === "overview"
+                ? "bg-brand-600/20 text-brand-300 border border-brand-500/30"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab("transactions")}
+            className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-center ${
+              activeTab === "transactions"
+                ? "bg-brand-600/20 text-brand-300 border border-brand-500/30"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Transactions
+          </button>
+          <button
+            onClick={() => setActiveTab("advisor")}
+            className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-center ${
+              activeTab === "advisor"
+                ? "bg-brand-600/20 text-brand-300 border border-brand-500/30"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            AI Advisor
+          </button>
+        </div>
       </header>
 
       {/* ── Main content ────────────────────────────────────── */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
+      <main className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-6">
         {/* ── Loading Skeleton ─────────────────────────────── */}
         {loading && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
@@ -174,46 +212,62 @@ export default function DashboardPage() {
             {/* 2-Column Grid: Charts & Activity (2/3) + Advisor (1/3) */}
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Left Column — 2/3 width */}
-              <div className="space-y-6 lg:col-span-2">
+              <div
+                className={`space-y-6 lg:col-span-2 ${
+                  activeTab === "advisor" ? "hidden lg:block" : "block"
+                }`}
+              >
                 {/* Category Pie Chart */}
-                <CategoryPieChart
-                  data={categories}
-                  periodSelect={
-                    <select
-                      value={categoryPeriod}
-                      onChange={(e) => setCategoryPeriod(e.target.value)}
-                      className="rounded-lg border border-slate-700 bg-surface-800 px-2.5 py-1 text-xs font-medium text-slate-300 focus:border-brand-500 focus:outline-none cursor-pointer"
-                    >
-                      <option value="month">This Month</option>
-                      <option value="all">All Time</option>
-                    </select>
-                  }
-                />
+                <div className={activeTab === "transactions" ? "hidden lg:block" : "block"}>
+                  <CategoryPieChart
+                    data={categories}
+                    periodSelect={
+                      <select
+                        value={categoryPeriod}
+                        onChange={(e) => setCategoryPeriod(e.target.value)}
+                        className="rounded-lg border border-slate-700 bg-surface-800 px-2.5 py-1 text-xs font-medium text-slate-300 focus:border-brand-500 focus:outline-none cursor-pointer"
+                      >
+                        <option value="month">This Month</option>
+                        <option value="all">All Time</option>
+                      </select>
+                    }
+                  />
+                </div>
 
                 {/* Trend Area Chart */}
-                <TrendAreaChart
-                  data={trends}
-                  timeframeSelect={
-                    <select
-                      value={timeframe}
-                      onChange={(e) => setTimeframe(e.target.value)}
-                      className="rounded-lg border border-slate-700 bg-surface-800 px-2.5 py-1 text-xs font-medium text-slate-300 focus:border-brand-500 focus:outline-none cursor-pointer"
-                    >
-                      <option value="7d">7 days</option>
-                      <option value="30d">30 days</option>
-                      <option value="90d">90 days</option>
-                    </select>
-                  }
-                />
+                <div className={activeTab === "transactions" ? "hidden lg:block" : "block"}>
+                  <TrendAreaChart
+                    data={trends}
+                    timeframeSelect={
+                      <select
+                        value={timeframe}
+                        onChange={(e) => setTimeframe(e.target.value)}
+                        className="rounded-lg border border-slate-700 bg-surface-800 px-2.5 py-1 text-xs font-medium text-slate-300 focus:border-brand-500 focus:outline-none cursor-pointer"
+                      >
+                        <option value="7d">7 days</option>
+                        <option value="30d">30 days</option>
+                        <option value="90d">90 days</option>
+                      </select>
+                    }
+                  />
+                </div>
 
                 {/* Transactions Table */}
-                <TransactionList onTransactionChanged={fetchAll} />
+                <div className={activeTab === "overview" ? "hidden lg:block" : "block"}>
+                  <TransactionList onTransactionChanged={fetchAll} />
+                </div>
               </div>
 
               {/* Right Column — 1/3 width AI Advisor */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-20 rounded-xl border border-slate-800 bg-surface-900/90 backdrop-blur-md p-4 shadow-sm flex flex-col h-[600px]">
-                  <div className="mb-3 flex items-center justify-between pb-3 border-b border-slate-800">
+              <div
+                className={`lg:col-span-1 ${
+                  activeTab === "advisor" || activeTab === "overview"
+                    ? "block"
+                    : "hidden lg:block"
+                }`}
+              >
+                <div className="sticky top-20 rounded-xl border border-slate-800 bg-surface-900/90 backdrop-blur-md p-3.5 sm:p-4 shadow-sm flex flex-col h-[480px] sm:h-[550px] lg:h-[600px]">
+                  <div className="mb-3 flex items-center justify-between pb-2.5 border-b border-slate-800">
                     <div className="flex items-center gap-2">
                       <Sparkles size={16} className="text-brand-400" />
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">

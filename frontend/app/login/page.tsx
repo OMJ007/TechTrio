@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface-950 p-4 bg-radial-gradient">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface-900/90 backdrop-blur-xl p-8 shadow-2xl space-y-6">
+      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface-900/90 backdrop-blur-xl p-5 sm:p-8 shadow-2xl space-y-6">
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="text-center space-y-2">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/20 border border-brand-500/30 text-brand-400 mb-1">
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-base sm:text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                 placeholder="you@example.com"
               />
               <Mail size={16} className="absolute left-3.5 top-3 text-slate-500" />
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-base sm:text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                 placeholder="••••••••"
               />
               <Lock size={16} className="absolute left-3.5 top-3 text-slate-500" />

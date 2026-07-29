@@ -19,7 +19,7 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
   const isNetPositive = summary.net_cash_flow >= 0;
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       <StatCard
         title="Monthly Income"
         value={formatCurrency(summary.total_income)}

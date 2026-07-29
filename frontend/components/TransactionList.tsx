@@ -184,7 +184,7 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
                 onChange={(e) => setNewMerchant(e.target.value)}
                 placeholder="e.g. Starbucks"
                 required
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-2 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none min-h-[44px] sm:min-h-[auto]"
               />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
                 onChange={(e) => setNewAmount(e.target.value)}
                 placeholder="0.00"
                 required
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none font-mono"
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-2 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none font-mono min-h-[44px] sm:min-h-[auto]"
               />
             </div>
             <div>
@@ -209,7 +209,7 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-1.5 text-xs text-white focus:border-brand-500 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-2 text-base sm:text-xs text-white focus:border-brand-500 focus:outline-none min-h-[44px] sm:min-h-[auto]"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -225,7 +225,7 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
               <select
                 value={newPaymentMethod}
                 onChange={(e) => setNewPaymentMethod(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-1.5 text-xs text-white focus:border-brand-500 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-2 text-base sm:text-xs text-white focus:border-brand-500 focus:outline-none min-h-[44px] sm:min-h-[auto]"
               >
                 <option value="Card">Card</option>
                 <option value="UPI">UPI</option>
@@ -274,36 +274,37 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
         />
       )}
 
-      {/* Transactions Table */}
+      {/* Transactions — Mobile Card View (< sm) */}
       {!loading && !error && transactions.length > 0 && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Merchant</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((t) => (
-              <TableRow key={t.id}>
-                <TableCell className="font-medium text-white">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-surface-800 text-slate-400 border border-slate-700/60">
-                      <CreditCard size={14} />
-                    </div>
-                    <div>
-                      <span>{t.merchant}</span>
-                      <span className="block text-[11px] font-normal text-slate-500">
-                        {t.payment_method}
-                      </span>
-                    </div>
+        <div className="block sm:hidden space-y-3">
+          {transactions.map((t) => (
+            <div
+              key={t.id}
+              className="rounded-xl border border-slate-800 bg-surface-850 p-3.5 space-y-2.5"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-surface-800 text-slate-400 border border-slate-700/60 shrink-0">
+                    <CreditCard size={16} />
                   </div>
-                </TableCell>
-                <TableCell>
+                  <div>
+                    <h4 className="font-semibold text-white text-sm">{t.merchant}</h4>
+                    <p className="text-[11px] text-slate-400">
+                      {t.payment_method} &middot;{" "}
+                      {new Date(t.transaction_date).toLocaleDateString("en-IN", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <span className="font-bold font-mono text-sm tabular-nums text-rose-400">
+                  -{formatCurrency(t.amount)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
+                <div className="flex items-center gap-2">
                   {editingId === t.id ? (
                     <div className="flex items-center gap-1.5">
                       <select
@@ -319,17 +320,17 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
                       </select>
                       <button
                         onClick={() => handleSaveCategory(t.id)}
-                        className="rounded p-1 text-emerald-400 hover:bg-surface-800"
+                        className="rounded p-1.5 text-emerald-400 hover:bg-surface-800"
                         title="Save category"
                       >
-                        <Check size={14} />
+                        <Check size={16} />
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="rounded p-1 text-slate-400 hover:bg-surface-800"
+                        className="rounded p-1.5 text-slate-400 hover:bg-surface-800"
                         title="Cancel"
                       >
-                        <X size={14} />
+                        <X size={16} />
                       </button>
                     </div>
                   ) : (
@@ -337,54 +338,156 @@ export default function TransactionList({ onTransactionChanged }: TransactionLis
                       {t.category}
                     </Badge>
                   )}
-                </TableCell>
-                <TableCell className="text-xs text-slate-400 font-mono">
-                  {new Date(t.transaction_date).toLocaleDateString("en-IN", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </TableCell>
-                <TableCell>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${
+                    className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider border ${
                       t.source === "ocr"
                         ? "bg-purple-500/10 text-purple-300 border-purple-500/20"
                         : "bg-slate-800 text-slate-400 border-slate-700"
                     }`}
                   >
-                    {t.source === "ocr" && <Sparkles size={10} />}
+                    {t.source === "ocr" && <Sparkles size={9} />}
                     {t.source}
                   </span>
-                </TableCell>
-                <TableCell className="text-right font-bold font-mono tabular-nums text-rose-400">
-                  -{formatCurrency(t.amount)}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => {
-                        setEditingId(t.id);
-                        setEditCategory(t.category);
-                      }}
-                      title="Edit category"
-                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTransaction(t.id)}
-                      title="Delete transaction"
-                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-surface-800 hover:text-rose-400"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </TableCell>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      setEditingId(t.id);
+                      setEditCategory(t.category);
+                    }}
+                    title="Edit category"
+                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  >
+                    <Edit2 size={15} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTransaction(t.id)}
+                    title="Delete transaction"
+                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-rose-400 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Transactions — Desktop Table View (>= sm) */}
+      {!loading && !error && transactions.length > 0 && (
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Merchant</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="font-medium text-white">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-surface-800 text-slate-400 border border-slate-700/60">
+                        <CreditCard size={14} />
+                      </div>
+                      <div>
+                        <span>{t.merchant}</span>
+                        <span className="block text-[11px] font-normal text-slate-500">
+                          {t.payment_method}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {editingId === t.id ? (
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value)}
+                          className="rounded-lg border border-slate-700 bg-surface-800 px-2 py-1 text-xs text-white focus:border-brand-500 focus:outline-none"
+                        >
+                          {CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleSaveCategory(t.id)}
+                          className="rounded p-1 text-emerald-400 hover:bg-surface-800"
+                          title="Save category"
+                        >
+                          <Check size={14} />
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="rounded p-1 text-slate-400 hover:bg-surface-800"
+                          title="Cancel"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <Badge variant="category" categoryName={t.category} icon={<Tag size={10} />}>
+                        {t.category}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 font-mono">
+                    {new Date(t.transaction_date).toLocaleDateString("en-IN", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${
+                        t.source === "ocr"
+                          ? "bg-purple-500/10 text-purple-300 border-purple-500/20"
+                          : "bg-slate-800 text-slate-400 border-slate-700"
+                      }`}
+                    >
+                      {t.source === "ocr" && <Sparkles size={10} />}
+                      {t.source}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right font-bold font-mono tabular-nums text-rose-400">
+                    -{formatCurrency(t.amount)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => {
+                          setEditingId(t.id);
+                          setEditCategory(t.category);
+                        }}
+                        title="Edit category"
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTransaction(t.id)}
+                        title="Delete transaction"
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-surface-800 hover:text-rose-400"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );

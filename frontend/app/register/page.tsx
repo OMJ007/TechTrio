@@ -59,8 +59,8 @@ export default function RegisterPage() {
   const displayError = fieldError || error;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface-950 p-4 py-8 bg-radial-gradient">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface-900/90 backdrop-blur-xl p-8 shadow-2xl space-y-5">
+    <main className="flex min-h-screen items-center justify-center bg-surface-950 p-3 sm:p-4 py-6 sm:py-8 bg-radial-gradient">
+      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface-900/90 backdrop-blur-xl p-5 sm:p-8 shadow-2xl space-y-5">
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="text-center space-y-1.5">
           <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-600/20 border border-brand-500/30 text-brand-400 mb-1">
@@ -94,15 +94,15 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                 placeholder="you@example.com"
               />
-              <Mail size={14} className="absolute left-3 top-2.5 text-slate-500" />
+              <Mail size={14} className="absolute left-3 top-3 text-slate-500" />
             </div>
           </div>
 
           {/* Passwords */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label htmlFor="password" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">
                 Password
@@ -115,10 +115,10 @@ export default function RegisterPage() {
                   minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
                   placeholder="8+ chars"
                 />
-                <Lock size={14} className="absolute left-3 top-2.5 text-slate-500" />
+                <Lock size={14} className="absolute left-3 top-3 text-slate-500" />
               </div>
             </div>
 
@@ -132,7 +132,7 @@ export default function RegisterPage() {
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
                 placeholder="Confirm"
               />
             </div>
@@ -152,10 +152,10 @@ export default function RegisterPage() {
                 step={100}
                 value={income}
                 onChange={(e) => setIncome(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none font-mono"
+                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-3.5 py-2 pl-9 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none font-mono"
                 placeholder="50000"
               />
-              <IndianRupee size={14} className="absolute left-3 top-2.5 text-slate-500" />
+              <IndianRupee size={14} className="absolute left-3 top-3 text-slate-500" />
             </div>
           </div>
 
@@ -164,13 +164,13 @@ export default function RegisterPage() {
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
               Investment Risk Strategy
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {RISK_PROFILES.map((p) => (
                 <button
                   type="button"
                   key={p.value}
                   onClick={() => setRisk(p.value)}
-                  className={`rounded-xl border p-2.5 text-left transition-all ${
+                  className={`rounded-xl border p-2.5 text-left transition-all min-h-[44px] ${
                     risk === p.value
                       ? "border-brand-500 bg-brand-500/10 text-white"
                       : "border-slate-800 bg-surface-850 text-slate-400 hover:border-slate-700"

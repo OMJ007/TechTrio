@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,15 @@ export const metadata: Metadata = {
   title: "Xpense AI — Financial Advisor & Expense Intelligence",
   description:
     "AI-powered platform that tracks expenses, provides financial insights, and helps you make smarter money decisions.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#0b0f17",
 };
 
 export default function RootLayout({

@@ -104,8 +104,8 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-surface-900 p-6 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto touch-scrolling rounded-2xl border border-slate-800 bg-surface-900 p-4 sm:p-6 shadow-2xl space-y-4">
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
           </div>
           <button
             onClick={handleClose}
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white"
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center"
           >
             <X size={18} />
           </button>

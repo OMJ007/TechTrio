@@ -71,9 +71,9 @@ export function CategoryPieChart({
   }
 
   return (
-    <ChartContainer title="Spending by Category" action={periodSelect} height="h-80">
+    <ChartContainer title="Spending by Category" action={periodSelect} height="h-80 sm:h-80">
       <div className="flex flex-col h-full">
-        <div className="h-52 w-full">
+        <div className="h-48 sm:h-52 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -82,8 +82,8 @@ export function CategoryPieChart({
                 nameKey="category"
                 cx="50%"
                 cy="50%"
-                outerRadius={85}
-                innerRadius={52}
+                outerRadius={78}
+                innerRadius={48}
                 paddingAngle={3}
               >
                 {data.map((entry) => (
@@ -101,17 +101,17 @@ export function CategoryPieChart({
         </div>
 
         {/* Legend Grid */}
-        <div className="mt-auto pt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-xs">
+        <div className="mt-auto pt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-3 sm:gap-x-4 gap-y-1.5 text-xs">
           {data.map((d) => {
             const catColor = getCategoryColor(d.category);
             return (
-              <div key={d.category} className="flex items-center gap-2 overflow-hidden">
+              <div key={d.category} className="flex items-center gap-1.5 sm:gap-2 overflow-hidden">
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: catColor.hex }}
                 />
-                <span className="truncate text-slate-300 font-medium">{d.category}</span>
-                <span className="ml-auto text-slate-400 font-mono tabular-nums">
+                <span className="truncate text-slate-300 font-medium text-[11px] sm:text-xs">{d.category}</span>
+                <span className="ml-auto text-slate-400 font-mono text-[11px] sm:text-xs tabular-nums">
                   {d.percentage}%
                 </span>
               </div>
@@ -145,9 +145,9 @@ export function TrendAreaChart({
   }
 
   return (
-    <ChartContainer title="Daily Spending Trend" action={timeframeSelect} height="h-72">
+    <ChartContainer title="Daily Spending Trend" action={timeframeSelect} height="h-64 sm:h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#6366f1" stopOpacity={0.4} />

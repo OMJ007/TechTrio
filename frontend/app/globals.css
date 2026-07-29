@@ -34,5 +34,18 @@
   .bg-radial-gradient {
     background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
   }
+
+  /* Mobile touch & safe area utilities */
+  .touch-scrolling {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 }
 

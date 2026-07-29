@@ -247,7 +247,7 @@ export default function AdvisorChat() {
       {/* ── Messages ─────────────────────────────────────────── */}
       <div
         ref={listRef}
-        className="flex-1 space-y-3 overflow-y-auto pr-1 text-xs"
+        className="flex-1 space-y-3 overflow-y-auto touch-scrolling pr-1 text-xs"
       >
         {messages.map((msg, i) => (
           <div
@@ -299,7 +299,7 @@ export default function AdvisorChat() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about spending, taxes, budget…"
           disabled={streaming}
-          className="flex-1 rounded-lg border border-slate-700 bg-surface-800 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none disabled:opacity-50"
+          className="flex-1 rounded-lg border border-slate-700 bg-surface-800 px-3.5 py-2 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none disabled:opacity-50 min-h-[44px] sm:min-h-[auto]"
         />
 
         {streaming ? (
