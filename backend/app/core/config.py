@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: SecretStr | None = Field(default=None)
     GROQ_API_URL: str = "https://api.groq.com/openai/v1/chat/completions"
     GROQ_MODEL: str = "qwen/qwen3.6-27b"
-    GROQ_OCR_MODEL: str = "qwen/qwen3.6-27b"
+    GROQ_OCR_MODEL: str = "llama-3.2-11b-vision-preview"
 
 
 

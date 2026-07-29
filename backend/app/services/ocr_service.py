@@ -1,7 +1,7 @@
-"""OCR service — extracts text from receipt/bill images using Groq Vision (Qwen 3.6-27b) or Google Cloud Vision.
+"""OCR service — extracts text from receipt/bill images using Groq Vision (llama-3.2-11b-vision-preview) or Google Cloud Vision.
 
 Strategy:
-  1. **Groq Vision LLM** — Uses ``qwen/qwen3.6-27b`` (or configured vision model)
+  1. **Groq Vision LLM** — Uses ``llama-3.2-11b-vision-preview`` (or configured vision model)
      via Groq API to perform multimodal OCR and extract structured receipt data directly.
   2. **Google Cloud Vision fallback** — Used if Groq API key is unconfigured or fails.
 """
@@ -24,13 +24,13 @@ _vision_available: bool | None = None
 _LLM_TIMEOUT_SECS = 30
 
 
-# ── Groq Vision OCR (Qwen 3.6-27b) ───────────────────────────────────────
+# ── Groq Vision OCR (llama-3.2-11b-vision-preview) ───────────────────────
 
 def extract_text_with_groq_vision(
     image_bytes: bytes,
     mime_type: str = "image/jpeg",
 ) -> tuple[str, float, dict[str, Any] | None]:
-    """Perform OCR using Groq's Vision LLM (qwen/qwen3.6-27b).
+    """Perform OCR using Groq's Vision LLM (llama-3.2-11b-vision-preview).
 
     Returns ``(raw_text, confidence_score, extracted_dict)``.
     """
@@ -62,7 +62,6 @@ def extract_text_with_groq_vision(
     }
     payload = {
         "model": settings.GROQ_OCR_MODEL,
-        "response_format": {"type": "json_object"},
         "messages": [
             {
                 "role": "user",
