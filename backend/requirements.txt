@@ -1,0 +1,30 @@
+# ── Web framework & server ─────────────────────────────────────────
+fastapi==0.115.2
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9          # FastAPI form-data (OAuth2 flow)
+
+# ── Database ──────────────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.34      # ORM with async driver support
+asyncpg==0.29.0                  # PostgreSQL async driver
+pydantic==2.8.2                  # Data validation (FastAPI dependency)
+email-validator==2.2.0           # Pydantic EmailStr validation
+pydantic-settings==2.4.0         # Settings management via env / .env
+
+# ── Auth / Security ───────────────────────────────────────────────
+python-jose[cryptography]==3.3.0  # JWT token creation & verification
+passlib[bcrypt]==1.7.4            # Password hashing (bcrypt scheme)
+bcrypt==4.2.0                     # Native bcrypt (passlib backend)
+
+# ── AI / ML ───────────────────────────────────────────────────────
+google-cloud-vision==3.7.0       # OCR receipt scanning
+chromadb==0.5.0                  # Vector DB for semantic search
+langchain==0.3.0                 # LLM orchestration framework
+sentence-transformers==3.0.1     # Text embeddings for ChromaDB RAG
+httpx==0.27.0                    # Async HTTP client (LLM + streaming)
+
+# ── Testing ───────────────────────────────────────────────────────
+pytest==8.3.3
+pytest-asyncio==0.24.0
+
+# ── Utilities ─────────────────────────────────────────────────────
+python-dotenv==1.0.1             # Load .env in local dev
