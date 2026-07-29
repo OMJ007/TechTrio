@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # ── Core ──────────────────────────────────────────────────────────
     APP_NAME: str = "xpense-ai"
     DEBUG: bool = False
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    ALLOWED_ORIGINS: list[str] = ["*"]
 
     # ── Database ──────────────────────────────────────────────────────
     # Canonical: DATABASE_URL. Legacy alias: POSTGRES_URL.
