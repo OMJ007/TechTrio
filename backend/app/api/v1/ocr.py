@@ -30,6 +30,41 @@ _FALLBACK_MERCHANT = "Unknown Merchant"
 _FALLBACK_PAYMENT_METHOD = "Unknown"
 
 
+def _parse_date_string(raw: str | None) -> datetime | None:
+    """Attempt to parse a date string into a UTC datetime."""
+    if not raw:
+        return None
+
+    raw_str = str(raw).strip()
+    if not raw_str:
+        return None
+
+    # Common formats: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, YYYY/MM/DD, MM/DD/YYYY
+    formats = [
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%d-%m-%Y",
+        "%Y/%m/%d",
+        "%m/%d/%Y",
+    ]
+
+    clean_str = raw_str[:10]
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(clean_str, fmt)
+            return dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+
+    try:
+        dt = datetime.fromisoformat(raw_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except ValueError:
+        return None
+
+
 @router.post(
     "/upload",
     response_model=OcrUploadResponse,
@@ -111,22 +146,8 @@ async def upload_receipt(
             ),
         )
 
-    transaction_date: datetime
-    now = datetime.now(timezone.utc)
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-    if raw_date:
-        try:
-            dt = datetime.strptime(str(raw_date)[:10], "%Y-%m-%d")
-            parsed_dt = dt.replace(tzinfo=timezone.utc)
-            if parsed_dt < month_start:
-                transaction_date = now
-            else:
-                transaction_date = parsed_dt
-        except ValueError:
-            transaction_date = now
-    else:
-        transaction_date = now
+    parsed_date = _parse_date_string(raw_date)
+    transaction_date = parsed_date if parsed_date is not None else datetime.now(timezone.utc)
 
     transaction = await create_ocr_transaction(
         current_user=current_user,
@@ -142,7 +163,7 @@ async def upload_receipt(
     extracted_data = ExtractedData(
         amount=amount,
         merchant=merchant,
-        date=str(raw_date)[:10] if raw_date else None,
+        date=transaction_date.strftime("%Y-%m-%d"),
         upi_id=upi_id,
         transaction_id=transaction_id,
     )
