@@ -125,19 +125,16 @@ def _get_collection() -> Any:
     """Return the finance-knowledge collection (lazy init + auto-seed)."""
     global _collection
     if _collection is None:
-        import chromadb
-        from chromadb.errors import InvalidCollectionException
-
         client = _get_client()
         try:
-            _collection = client.get_collection(_COLLECTION_NAME)
-            _maybe_seed(_collection)
-        except (InvalidCollectionException, ValueError):
-            _collection = client.create_collection(
+            _collection = client.get_or_create_collection(
                 _COLLECTION_NAME,
                 metadata={"hnsw:space": "cosine"},
             )
-            _seed_collection(_collection)
+            _maybe_seed(_collection)
+        except Exception as exc:
+            logger.error("Failed to get/create ChromaDB collection: %s", exc)
+            raise
     return _collection
 
 
@@ -224,13 +221,10 @@ def reset_collection() -> None:
         logger.warning("reset_collection skipped — chromadb unavailable")
         return
 
-    import chromadb
-    from chromadb.errors import InvalidCollectionException
-
     client = _get_client()
     try:
         client.delete_collection(_COLLECTION_NAME)
-    except (InvalidCollectionException, ValueError):
+    except Exception:
         pass
     _collection = client.create_collection(
         _COLLECTION_NAME,
