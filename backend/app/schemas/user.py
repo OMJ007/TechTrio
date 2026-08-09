@@ -33,6 +33,13 @@ class UserCreate(BaseModel):
     )
 
 
+class UserUpdate(BaseModel):
+    """Request body for updating user profile."""
+
+    monthly_income: float | None = Field(None, ge=0)
+    risk_profile: str | None = Field(None, pattern=r"^(conservative|moderate|aggressive)$")
+
+
 class UserRead(BaseModel):
     """Public user profile returned by the API (never exposes password)."""
 
@@ -50,4 +57,3 @@ class Token(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
-

@@ -2,16 +2,26 @@
 
 import { type HTMLAttributes, forwardRef } from "react";
 
-export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className = "", children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={`rounded-xl border border-slate-800 bg-surface-900/80 backdrop-blur-sm p-5 shadow-sm transition-colors hover:border-slate-700/80 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  )
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: "surface" | "raised";
+  hoverLift?: boolean;
+}
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ variant = "surface", hoverLift = false, className = "", children, ...props }, ref) => {
+    const bgStyle = variant === "raised" ? "bg-[#1B2130]/90" : "bg-[#141824]/75";
+    const hoverStyle = hoverLift ? "hover-lift" : "";
+
+    return (
+      <div
+        ref={ref}
+        className={`rounded-[20px] border border-white/[0.09] ${bgStyle} backdrop-blur-xl p-6 shadow-[0_18px_60px_-40px_rgba(0,0,0,.95)] ${hoverStyle} ${className}`}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
 );
 Card.displayName = "Card";
 
@@ -21,7 +31,7 @@ export const CardHeader = forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <div
     ref={ref}
-    className={`flex items-center justify-between pb-4 border-b border-slate-800/80 ${className}`}
+    className={`flex items-center justify-between pb-4 border-b border-white/[0.08] ${className}`}
     {...props}
   >
     {children}
@@ -35,7 +45,7 @@ export const CardTitle = forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <h3
     ref={ref}
-    className={`text-xs font-semibold uppercase tracking-wider text-slate-400 ${className}`}
+    className={`text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] ${className}`}
   >
     {children}
   </h3>

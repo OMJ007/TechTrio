@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
-import { Upload, X, CheckCircle, AlertCircle, Sparkles, FileText } from "lucide-react";
+import { Upload, X, CheckCircle, Sparkles } from "lucide-react";
 
 import { apiUpload } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
@@ -41,7 +41,6 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
-  // ── Reset state when modal opens/closes ────────────────────────
   const reset = () => {
     setFile(null);
     setResult(null);
@@ -54,7 +53,6 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
     onClose();
   };
 
-  // ── Drag handlers ──────────────────────────────────────────────
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
     setDragging(true);
@@ -82,7 +80,6 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
     }
   };
 
-  // ── Upload ─────────────────────────────────────────────────────
   const handleUpload = async () => {
     if (!file) return;
 
@@ -104,22 +101,22 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto touch-scrolling rounded-2xl border border-slate-800 bg-surface-900 p-4 sm:p-6 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[16px] border border-[#2A3140] bg-[#141824] p-6 shadow-2xl space-y-4">
         {/* ── Header ──────────────────────────────────────────── */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-brand-600/20 text-brand-400 border border-brand-500/30">
-              <Sparkles size={16} />
+        <div className="flex items-center justify-between pb-3 border-b border-[#2A3140]">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">
+              <Sparkles size={18} />
             </div>
             <div>
               <h2 className="text-base font-bold text-white">Upload Receipt</h2>
-              <p className="text-xs text-slate-400">AI-powered OCR transaction parsing</p>
+              <p className="text-xs text-[#9BA4B5]">AI-powered OCR transaction parsing</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-surface-800 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center"
+            className="rounded-lg p-2 text-[#9BA4B5] hover:bg-[#1B2130] hover:text-white transition-colors"
           >
             <X size={18} />
           </button>
@@ -132,19 +129,19 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => inputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-all duration-150 ${
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-[16px] border-2 border-dashed p-8 transition-all duration-150 ${
               dragging
-                ? "border-brand-500 bg-brand-500/10"
-                : "border-slate-700 bg-surface-850/60 hover:border-slate-600 hover:bg-surface-850"
+                ? "border-[#3B82F6] bg-[#3B82F6]/10"
+                : "border-[#2A3140] bg-[#1B2130]/50 hover:border-[#3B82F6]/50 hover:bg-[#1B2130]"
             }`}
           >
-            <div className="p-3 rounded-full bg-surface-800 text-slate-400 mb-3 border border-slate-700">
+            <div className="p-3 rounded-full bg-[#141824] text-[#9BA4B5] mb-3 border border-[#2A3140]">
               <Upload size={24} />
             </div>
-            <p className="text-sm font-semibold text-slate-200 text-center">
+            <p className="text-sm font-semibold text-white text-center">
               {file ? file.name : "Drop receipt image or click to browse"}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-[#9BA4B5]">
               Supports JPEG, PNG, WebP &middot; Up to 10 MB
             </p>
             <input
@@ -172,9 +169,9 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
 
         {/* ── Progress ────────────────────────────────────────── */}
         {uploading && (
-          <div className="py-6 flex flex-col items-center justify-center gap-3 text-sm text-slate-300">
-            <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-700 border-t-brand-500" />
-            <p className="text-xs text-slate-400">Scanning receipt &amp; extracting line items…</p>
+          <div className="py-6 flex flex-col items-center justify-center gap-3 text-sm text-[#9BA4B5]">
+            <div className="h-7 w-7 animate-spin rounded-full border-2 border-[#2A3140] border-t-[#3B82F6]" />
+            <p className="text-xs text-[#9BA4B5]">Scanning receipt &amp; extracting line items…</p>
           </div>
         )}
 
@@ -187,16 +184,16 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
         {result && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#45D6A5]">
                 <CheckCircle size={16} />
                 <span>Receipt Successfully Parsed</span>
               </div>
-              <Badge variant="income" size="sm">
+              <Badge variant="ai" size="sm">
                 {(result.confidence_score * 100).toFixed(0)}% Confidence
               </Badge>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-surface-850 p-4 text-xs space-y-2.5">
+            <div className="rounded-[16px] border border-[#2A3140] bg-[#1B2130] p-4 text-xs space-y-2.5">
               <ResultRow label="Merchant" value={result.extracted.merchant} />
               <ResultRow
                 label="Amount"
@@ -230,8 +227,6 @@ export default function OCRUploadModal({ open, onClose, onSuccess }: Props) {
   );
 }
 
-// ── Result row helper ──────────────────────────────────────────────────
-
 function ResultRow({
   label,
   value,
@@ -242,11 +237,11 @@ function ResultRow({
   isAmount?: boolean;
 }) {
   return (
-    <div className="flex justify-between items-center py-1 border-b border-slate-800/60 last:border-0">
-      <span className="text-slate-400 font-medium">{label}</span>
+    <div className="flex justify-between items-center py-1 border-b border-[#2A3140]/60 last:border-0">
+      <span className="text-[#9BA4B5] font-mono text-xs">{label}</span>
       <span
         className={`font-semibold ${
-          isAmount ? "text-rose-400 font-mono text-sm tabular-nums" : "text-white"
+          isAmount ? "text-[#F07178] font-mono text-sm tabular-nums" : "text-white"
         }`}
       >
         {value ?? "—"}

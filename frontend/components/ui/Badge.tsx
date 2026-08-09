@@ -1,48 +1,61 @@
 "use client";
 
+import React from "react";
+import { Sparkles } from "lucide-react";
 import { getCategoryColor } from "@/lib/colors";
 
 export interface BadgeProps {
   children: React.ReactNode;
-  variant?: "category" | "income" | "expense" | "warning" | "neutral" | "info";
-  categoryName?: string;
+  variant?: "default" | "positive" | "negative" | "warning" | "ai" | "category" | "outline";
+  category?: string;
   size?: "sm" | "md";
   className?: string;
-  icon?: React.ReactNode;
 }
 
-export function Badge({
+export const Badge: React.FC<BadgeProps> = ({
   children,
-  variant = "neutral",
-  categoryName,
-  size = "md",
+  variant = "default",
+  category,
+  size = "sm",
   className = "",
-  icon,
-}: BadgeProps) {
-  let colorStyles = "bg-slate-800 text-slate-300 border-slate-700/80";
+}) => {
+  const sizeStyles = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs";
 
-  if (variant === "category" && categoryName) {
-    const color = getCategoryColor(categoryName);
-    colorStyles = `${color.bgClass} ${color.textClass} ${color.borderClass}`;
-  } else if (variant === "income") {
-    colorStyles = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-  } else if (variant === "expense") {
-    colorStyles = "bg-rose-500/10 text-rose-400 border-rose-500/20";
-  } else if (variant === "warning") {
-    colorStyles = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-  } else if (variant === "info") {
-    colorStyles = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+  if (variant === "category" && category) {
+    const color = getCategoryColor(category);
+    return (
+      <span
+        className={`inline-flex items-center rounded-full font-mono font-medium border ${color.bgClass} ${color.textClass} ${color.borderClass} ${sizeStyles} ${className}`}
+      >
+        {category}
+      </span>
+    );
   }
 
-  const sizeStyles =
-    size === "sm" ? "px-2 py-0.5 text-[11px] gap-1" : "px-2.5 py-1 text-xs gap-1.5";
+  if (variant === "ai") {
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full font-mono font-medium bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/30 ${sizeStyles} ${className}`}
+      >
+        <Sparkles className="h-3 w-3 text-[#38BDF8]" />
+        {children}
+      </span>
+    );
+  }
+
+  const variantStyles = {
+    default: "bg-white/[0.07] text-[#B6BFCE] border border-white/[0.1]",
+    positive: "bg-[#45D6A5]/10 text-[#45D6A5] border border-[#45D6A5]/30",
+    negative: "bg-[#F07178]/10 text-[#F07178] border border-[#F07178]/30",
+    warning: "bg-[#F3B45B]/10 text-[#F3B45B] border border-[#F3B45B]/30",
+    outline: "bg-transparent text-[#9BA4B5] border border-[#2A3140]",
+  };
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full border border-financial ${colorStyles} ${sizeStyles} ${className}`}
+      className={`inline-flex items-center rounded-full font-mono font-medium ${variantStyles[variant as keyof typeof variantStyles]} ${sizeStyles} ${className}`}
     >
-      {icon && <span className="shrink-0">{icon}</span>}
-      <span>{children}</span>
+      {children}
     </span>
   );
-}
+};

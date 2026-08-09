@@ -28,21 +28,21 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface-950 p-4 bg-radial-gradient">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface-900/90 backdrop-blur-xl p-5 sm:p-8 shadow-2xl space-y-6">
+    <main className="app-canvas flex min-h-screen items-center justify-center p-4">
+      <div className="glass w-full max-w-md rounded-[28px] p-7 sm:p-10 shadow-2xl space-y-7">
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/20 border border-brand-500/30 text-brand-400 mb-1">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#3B82F6]/15 border border-[#3B82F6]/30 text-[#3B82F6] mb-1">
             <Sparkles size={24} />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white flex items-center justify-center gap-2">
             <span>Xpense</span>
-            <span className="rounded bg-brand-600/20 px-1.5 py-0.5 text-xs font-semibold text-brand-400 border border-brand-500/30">
+            <span className="rounded-full bg-[#38BDF8]/15 px-2 py-0.5 text-xs font-mono font-semibold text-[#38BDF8] border border-[#38BDF8]/30">
               AI
             </span>
           </h1>
-          <p className="text-xs text-slate-400">
-            Sign in to access your financial intelligence workspace
+          <p className="text-xs text-[#9BA4B5]">
+            A calmer way to stay on top of your money.
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function LoginPage() {
         {/* ── Form ────────────────────────────────────────────── */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label htmlFor="email" className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] mb-1.5">
               Email Address
             </label>
             <div className="relative">
@@ -62,15 +62,15 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-base sm:text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 pl-10 text-sm text-white placeholder-[#7E8799] focus:border-[#3B82F6] focus:outline-none"
                 placeholder="you@example.com"
               />
-              <Mail size={16} className="absolute left-3.5 top-3 text-slate-500" />
+              <Mail size={16} className="absolute left-3.5 top-3 text-[#9BA4B5]" />
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label htmlFor="password" className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -81,10 +81,10 @@ export default function LoginPage() {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-surface-800 px-4 py-2.5 pl-10 text-base sm:text-sm text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 pl-10 text-sm text-white placeholder-[#7E8799] focus:border-[#3B82F6] focus:outline-none"
                 placeholder="••••••••"
               />
-              <Lock size={16} className="absolute left-3.5 top-3 text-slate-500" />
+              <Lock size={16} className="absolute left-3.5 top-3 text-[#9BA4B5]" />
             </div>
           </div>
 
@@ -101,9 +101,9 @@ export default function LoginPage() {
         </form>
 
         {/* ── Footer ──────────────────────────────────────────── */}
-        <p className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800">
+        <p className="text-center text-xs text-[#9BA4B5] pt-4 border-t border-[#2A3140]">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-semibold text-brand-400 hover:text-brand-300">
+          <Link href="/register" className="font-semibold text-[#3B82F6] hover:underline">
             Create account
           </Link>
         </p>

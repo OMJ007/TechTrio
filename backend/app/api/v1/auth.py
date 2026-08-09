@@ -22,7 +22,7 @@ from app.core.security import (
 )
 from app.db import get_session
 from app.models.user import User
-from app.schemas.user import Token, UserCreate, UserRead
+from app.schemas.user import Token, UserCreate, UserRead, UserUpdate
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -31,21 +31,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 # ── Dependencies ─────────────────────────────────────────────────────────
-# NOTE: get_current_user MUST be defined before endpoints that use it,
-# otherwise Python raises a NameError at module load time.
-
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ) -> User:
-    """Resolve the current authenticated user from a JWT bearer token.
-
-    Decodes the token, extracts the ``sub`` claim (a user UUID), fetches
-    the user from the database, and returns the ORM instance.
-
-    Raises ``401 Unauthorized`` if the token is invalid, expired, or
-    references a non-existent user.
-    """
+    """Resolve the current authenticated user from a JWT bearer token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -84,12 +74,7 @@ async def register(
     user_data: UserCreate,
     session: AsyncSession = Depends(get_session),
 ) -> User:
-    """Create a new user account.
-
-    The password is hashed with bcrypt before storage.  Returns the
-    newly created user (without the password hash).
-    """
-    # Check for existing user with the same email
+    """Create a new user account."""
     result = await session.execute(
         select(User).where(User.email == user_data.email),
     )
@@ -122,10 +107,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
 ) -> Token:
-    """Exchange valid credentials for a bearer JWT.
-
-    Uses the OAuth2 password-flow form fields (``username`` = email).
-    """
+    """Exchange valid credentials for a bearer JWT."""
     result = await session.execute(
         select(User).where(User.email == form_data.username),
     )
@@ -161,4 +143,25 @@ async def get_me(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """Return profile details for the currently authenticated user."""
+    return current_user
+
+
+@router.put(
+    "/me",
+    response_model=UserRead,
+    summary="Update current user profile",
+)
+async def update_me(
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+) -> User:
+    """Update profile parameters (monthly income, risk profile)."""
+    if user_update.monthly_income is not None:
+        current_user.monthly_income = user_update.monthly_income
+    if user_update.risk_profile is not None:
+        current_user.risk_profile = user_update.risk_profile
+
+    await session.commit()
+    await session.refresh(current_user)
     return current_user

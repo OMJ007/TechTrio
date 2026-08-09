@@ -3,41 +3,102 @@
 @tailwind utilities;
 
 @layer base {
-  /* Scrollbar customization for data-dense dashboards */
+  :root {
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, ui-monospace, monospace;
+    --ink: #f3f5fa;
+    --muted: #9ba4b5;
+    --canvas: #0b0d12;
+    --surface: rgba(20, 24, 36, 0.74);
+    --surface-solid: #141824;
+    --line: rgba(255, 255, 255, 0.09);
+    --accent: #3b82f6;
+    --accent-strong: #2563eb;
+    --mint: #45d6a5;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  input, button, select, textarea { font: inherit; }
+
+  * { border-color: var(--line); }
+  ::selection { background: rgba(59, 130, 246, .32); color: #fff; }
+
+  /* Custom dark scrollbar matching design register */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0b0f17;
+    background: var(--canvas);
   }
   ::-webkit-scrollbar-thumb {
-    background: #25324e;
+    background: #2a3140;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3b82f6;
+    background: var(--accent);
   }
 }
 
 @layer utilities {
-  /* Financial tabular numbers utility */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
 
-  /* Custom subtle glass/card borders */
-  .border-financial {
-    border-color: rgba(255, 255, 255, 0.08);
+  /* Font classes per design spec */
+  .font-display-lg {
+    font-family: var(--font-sans);
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: -0.055em;
   }
 
-  .bg-radial-gradient {
-    background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+  .font-display-md {
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    font-weight: 650;
+    line-height: 1.05;
+    letter-spacing: -0.045em;
   }
 
-  /* Mobile touch & safe area utilities */
-  .touch-scrolling {
-    -webkit-overflow-scrolling: touch;
+  .font-heading {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+  }
+
+  .font-label-md {
+    font-family: var(--font-mono);
+    font-size: .75rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .font-numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hover Lift utility for modular cards */
+  .hover-lift {
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms ease, box-shadow 220ms ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 18px 45px -22px rgba(0, 0, 0, .9), 0 0 0 1px rgba(59,130,246,.08);
   }
 
   .pb-safe {
@@ -47,5 +108,32 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
-}
 
+  .app-canvas {
+    background:
+      radial-gradient(circle at 76% 0%, rgba(59, 130, 246, .14), transparent 27rem),
+      radial-gradient(circle at 12% 26%, rgba(69, 214, 165, .055), transparent 24rem),
+      var(--canvas);
+  }
+
+  .glass {
+    background: rgba(20, 24, 36, .72);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid var(--line);
+    box-shadow: inset 0 1px rgba(255,255,255,.06), 0 24px 70px -44px #000;
+  }
+
+  .eyebrow {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+}

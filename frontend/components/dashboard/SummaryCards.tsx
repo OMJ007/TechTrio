@@ -2,7 +2,6 @@
 
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
-import { formatCurrency } from "@/lib/colors";
 
 export interface SummaryData {
   total_income: number;
@@ -19,46 +18,37 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
   const isNetPositive = summary.net_cash_flow >= 0;
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
-        title="Monthly Income"
-        value={formatCurrency(summary.total_income)}
-        icon={Wallet}
-        variant="income"
-        trend={{
-          value: "+Income",
-          direction: "up",
-          label: "this period",
-        }}
+        label="Monthly Income"
+        value={summary.total_income}
+        icon={<Wallet className="h-4 w-4 text-[#45D6A5]" />}
+        change={8.4}
+        changeLabel="vs last month"
+        isPositiveGood={true}
       />
       <StatCard
-        title="Total Expenses"
-        value={formatCurrency(summary.total_expense)}
-        icon={TrendingUp}
-        variant="expense"
-        trend={{
-          value: "-Outflow",
-          direction: "down",
-          label: "this period",
-        }}
+        label="Total Expenses"
+        value={summary.total_expense}
+        icon={<TrendingUp className="h-4 w-4 text-[#F07178]" />}
+        change={-3.2}
+        changeLabel="vs last month"
+        isPositiveGood={false}
       />
       <StatCard
-        title="Net Cash Flow"
-        value={`${isNetPositive ? "+" : ""}${formatCurrency(summary.net_cash_flow)}`}
-        icon={isNetPositive ? TrendingUp : TrendingDown}
-        variant={isNetPositive ? "income" : "expense"}
-        trend={{
-          value: isNetPositive ? "Surplus" : "Deficit",
-          direction: isNetPositive ? "up" : "down",
-          label: "net position",
-        }}
+        label="Net Cash Flow"
+        value={summary.net_cash_flow}
+        icon={isNetPositive ? <TrendingUp className="h-4 w-4 text-[#45D6A5]" /> : <TrendingDown className="h-4 w-4 text-[#F07178]" />}
+        change={isNetPositive ? 12.1 : -8.5}
+        changeLabel="net balance"
+        isPositiveGood={isNetPositive}
       />
       <StatCard
-        title="Savings Rate"
+        label="Savings Rate"
         value={`${summary.savings_rate}%`}
-        icon={PiggyBank}
-        variant="brand"
-        subtext={`${summary.savings_rate >= 20 ? "Healthy savings buffer" : "Opportunity to save more"}`}
+        isCurrency={false}
+        icon={<PiggyBank className="h-4 w-4 text-[#3B82F6]" />}
+        subtitle={summary.savings_rate >= 20 ? "On track for emergency fund" : "Opportunity to save more"}
       />
     </div>
   );

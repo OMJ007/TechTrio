@@ -1,6 +1,7 @@
 "use client";
 
-import { Card } from "./Card";
+import React from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "./Card";
 
 export interface ChartContainerProps {
   title: string;
@@ -8,31 +9,31 @@ export interface ChartContainerProps {
   action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-  height?: string;
+  height?: string | number;
 }
 
-export function ChartContainer({
+export const ChartContainer: React.FC<ChartContainerProps> = ({
   title,
   subtitle,
   action,
   children,
   className = "",
-  height = "h-72",
-}: ChartContainerProps) {
+  height = 300,
+}) => {
   return (
-    <Card className={`flex flex-col ${className}`}>
-      <div className="mb-4 flex items-center justify-between pb-3 border-b border-slate-800/80">
+    <Card className={className}>
+      <CardHeader>
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {title}
-          </h3>
+          <CardTitle>{title}</CardTitle>
           {subtitle && (
-            <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>
+            <p className="mt-1 text-xs text-[#9BA4B5]">{subtitle}</p>
           )}
         </div>
         {action && <div>{action}</div>}
-      </div>
-      <div className={`w-full ${height}`}>{children}</div>
+      </CardHeader>
+      <CardContent className="pt-2">
+        <div style={{ height }}>{children}</div>
+      </CardContent>
     </Card>
   );
-}
+};

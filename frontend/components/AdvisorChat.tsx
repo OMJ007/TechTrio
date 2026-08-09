@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { Send, Bot, User, Loader2, Sparkles, StopCircle } from "lucide-react";
+import { Send, User, Sparkles, StopCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -16,6 +16,12 @@ const PERSONAS = [
   { value: "indian_finance", label: "Indian Tax Advisor (Section 80C & Tax)" },
 ] as const;
 
+const SUGGESTED_PROMPTS = [
+  "Where can I reduce spending this month?",
+  "Build a simple plan for my next ₹10,000.",
+  "What should I review before month-end?",
+];
+
 interface Message {
   role: "user" | "assistant";
   text: string;
@@ -25,56 +31,56 @@ interface Message {
 
 const markdownComponents = {
   table: ({ children }: any) => (
-    <div className="my-3 overflow-x-auto rounded-lg border border-slate-800 bg-surface-950/90 shadow-md">
-      <table className="min-w-full divide-y divide-slate-800 text-xs text-slate-200">
+    <div className="my-3 overflow-x-auto rounded-[16px] border border-[#2A3140] bg-[#141824] shadow-md">
+      <table className="min-w-full divide-y divide-[#2A3140] text-xs text-white">
         {children}
       </table>
     </div>
   ),
   thead: ({ children }: any) => (
-    <thead className="bg-surface-850 font-semibold text-cyan-300 uppercase tracking-wider">
+    <thead className="bg-[#1B2130] font-mono font-semibold text-[#3B82F6] uppercase tracking-wider">
       {children}
     </thead>
   ),
   tbody: ({ children }: any) => (
-    <tbody className="divide-y divide-slate-800/80 bg-surface-900/40">{children}</tbody>
+    <tbody className="divide-y divide-[#2A3140]/60 bg-[#141824]">{children}</tbody>
   ),
   tr: ({ children }: any) => (
-    <tr className="transition-colors hover:bg-surface-800/50">{children}</tr>
+    <tr className="transition-colors hover:bg-[#1B2130]">{children}</tr>
   ),
   th: ({ children }: any) => (
-    <th className="px-3 py-2 text-left text-[11px] font-bold text-brand-300">
+    <th className="px-3 py-2 text-left text-[11px] font-mono font-bold text-[#3B82F6]">
       {children}
     </th>
   ),
   td: ({ children }: any) => (
-    <td className="whitespace-normal px-3 py-2 text-xs text-slate-300 font-mono tabular-nums">
+    <td className="whitespace-normal px-3 py-2 text-xs text-[#9BA4B5] font-mono tabular-nums">
       {children}
     </td>
   ),
   h1: ({ children }: any) => (
-    <h1 className="mt-3 mb-1.5 border-b border-slate-800 pb-1 text-sm font-bold text-white">
+    <h1 className="mt-3 mb-1.5 border-b border-[#2A3140] pb-1 text-sm font-bold text-white">
       {children}
     </h1>
   ),
   h2: ({ children }: any) => (
-    <h2 className="mt-3 mb-1.5 border-b border-slate-800 pb-1 text-xs font-bold text-white">
+    <h2 className="mt-3 mb-1.5 border-b border-[#2A3140] pb-1 text-xs font-bold text-white">
       {children}
     </h2>
   ),
   h3: ({ children }: any) => (
-    <h3 className="mt-2 mb-1 text-xs font-semibold uppercase tracking-wider text-brand-400">
+    <h3 className="mt-2 mb-1 text-xs font-mono font-semibold uppercase tracking-wider text-[#38BDF8]">
       {children}
     </h3>
   ),
   p: ({ children }: any) => (
-    <p className="mb-2 text-xs leading-relaxed text-slate-200 last:mb-0">{children}</p>
+    <p className="mb-2 text-xs leading-relaxed text-[#9BA4B5] last:mb-0">{children}</p>
   ),
   ul: ({ children }: any) => (
-    <ul className="my-2 ml-4 list-disc space-y-1 text-xs text-slate-200">{children}</ul>
+    <ul className="my-2 ml-4 list-disc space-y-1 text-xs text-[#9BA4B5]">{children}</ul>
   ),
   ol: ({ children }: any) => (
-    <ol className="my-2 ml-4 list-decimal space-y-1 text-xs text-slate-200">{children}</ol>
+    <ol className="my-2 ml-4 list-decimal space-y-1 text-xs text-[#9BA4B5]">{children}</ol>
   ),
   li: ({ children }: any) => (
     <li className="leading-relaxed">{children}</li>
@@ -83,12 +89,12 @@ const markdownComponents = {
     <strong className="font-semibold text-white">{children}</strong>
   ),
   blockquote: ({ children }: any) => (
-    <blockquote className="my-2 rounded-r border-l-2 border-brand-500 bg-surface-850 px-3 py-2 text-xs italic text-slate-300">
+    <blockquote className="my-2 rounded-r border-l-2 border-[#38BDF8] bg-[#1B2130] px-3 py-2 text-xs italic text-[#9BA4B5]">
       {children}
     </blockquote>
   ),
   code: ({ children }: any) => (
-    <code className="rounded bg-surface-800 px-1.5 py-0.5 font-mono text-[11px] text-brand-300">
+    <code className="rounded bg-[#1B2130] px-1.5 py-0.5 font-mono text-[11px] text-[#38BDF8]">
       {children}
     </code>
   ),
@@ -217,8 +223,8 @@ export default function AdvisorChat() {
   return (
     <div className="flex h-full flex-col">
       {/* ── Persona selector ─────────────────────────────────── */}
-      <div className="mb-3">
-        <label htmlFor="persona" className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+      <div className="mb-4 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 sm:p-4">
+        <label htmlFor="persona" className="block text-[11px] font-mono font-semibold text-[#9BA4B5] uppercase tracking-wider">
           Advisor Strategy Persona
         </label>
         <select
@@ -234,7 +240,7 @@ export default function AdvisorChat() {
               },
             ]);
           }}
-          className="mt-1 block w-full rounded-lg border border-slate-700 bg-surface-800 px-3 py-1.5 text-xs text-white focus:border-brand-500 focus:outline-none cursor-pointer"
+          className="mt-2 block w-full rounded-xl border border-white/[0.1] bg-[#0B0D12]/40 px-3 py-2.5 text-xs text-white focus:border-[#3B82F6] focus:outline-none cursor-pointer"
         >
           {PERSONAS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -242,12 +248,24 @@ export default function AdvisorChat() {
             </option>
           ))}
         </select>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {SUGGESTED_PROMPTS.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              onClick={() => setInput(prompt)}
+              className="rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-left text-[11px] text-[#C9D1DE] transition-colors hover:border-[#3B82F6]/45 hover:bg-[#3B82F6]/10 hover:text-white"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Messages ─────────────────────────────────────────── */}
       <div
         ref={listRef}
-        className="flex-1 space-y-3 overflow-y-auto touch-scrolling pr-1 text-xs"
+        className="flex-1 space-y-4 overflow-y-auto pr-1 text-xs"
       >
         {messages.map((msg, i) => (
           <div
@@ -255,16 +273,16 @@ export default function AdvisorChat() {
             className={`flex items-start gap-2 ${msg.role === "user" ? "justify-end" : ""}`}
           >
             {msg.role === "assistant" && (
-              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-600/20 border border-brand-500/30">
-                <Bot size={13} className="text-brand-400" />
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#38BDF8]/15 border border-[#38BDF8]/30">
+                <Sparkles size={13} className="text-[#38BDF8]" />
               </div>
             )}
 
             <div
-              className={`max-w-[88%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+              className={`max-w-[88%] rounded-[16px] px-3.5 py-2.5 text-xs leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-brand-600/25 text-brand-100 border border-brand-500/30"
-                  : "bg-surface-850 text-slate-200 border border-slate-800 shadow-sm"
+                  ? "bg-[#3B82F6] text-[#111827] border border-[#BFDBFE]/40 shadow-lg shadow-[#3B82F6]/10"
+                  : "bg-white/[0.045] text-[#C9D1DE] border border-white/[0.09] shadow-sm"
               }`}
             >
               {msg.role === "user" ? (
@@ -275,16 +293,16 @@ export default function AdvisorChat() {
                 </ReactMarkdown>
               ) : (
                 <span className="inline-flex items-center gap-1 py-1">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-400" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-400 [animation-delay:0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-400 [animation-delay:0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#38BDF8]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#38BDF8] [animation-delay:0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#38BDF8] [animation-delay:0.3s]" />
                 </span>
               )}
             </div>
 
             {msg.role === "user" && (
-              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-surface-800 border border-slate-700">
-                <User size={13} className="text-slate-400" />
+              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#1B2130] border border-[#2A3140]">
+                <User size={13} className="text-[#9BA4B5]" />
               </div>
             )}
           </div>
@@ -292,14 +310,14 @@ export default function AdvisorChat() {
       </div>
 
       {/* ── Input ────────────────────────────────────────────── */}
-      <form onSubmit={handleSend} className="mt-3 flex items-center gap-2">
+      <form onSubmit={handleSend} className="mt-4 flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.04] p-2">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about spending, taxes, budget…"
           disabled={streaming}
-          className="flex-1 rounded-lg border border-slate-700 bg-surface-800 px-3.5 py-2 text-base sm:text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none disabled:opacity-50 min-h-[44px] sm:min-h-[auto]"
+          className="flex-1 rounded-xl border border-transparent bg-transparent px-3.5 py-2.5 text-xs text-white placeholder-[#7E8799] focus:border-[#3B82F6]/40 focus:bg-black/10 focus:outline-none disabled:opacity-50"
         />
 
         {streaming ? (

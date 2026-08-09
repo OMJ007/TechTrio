@@ -27,23 +27,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none";
+      "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none active:scale-[.98]";
 
     const variantStyles = {
       primary:
-        "bg-brand-600 hover:bg-brand-500 text-white shadow-sm shadow-brand-600/30 focus:ring-brand-500 active:scale-[0.98]",
+        "bg-[#3B82F6] hover:bg-[#93C5FD] text-[#10131B] shadow-lg shadow-[#3B82F6]/20",
       secondary:
-        "bg-surface-750 hover:bg-surface-700 text-slate-200 border border-slate-700/60 focus:ring-slate-500 active:scale-[0.98]",
+        "bg-white/[0.06] hover:bg-white/[0.1] text-[#C9D1DE] hover:text-white border border-white/[0.1]",
       outline:
-        "bg-transparent hover:bg-surface-800 text-slate-300 border border-slate-700 focus:ring-slate-500",
+        "bg-transparent hover:bg-white/[0.06] text-[#B6BFCE] hover:text-white border border-white/[0.1]",
       ghost:
-        "bg-transparent hover:bg-surface-800 text-slate-400 hover:text-slate-200 focus:ring-slate-500",
+        "bg-transparent hover:bg-white/[0.06] text-[#B6BFCE] hover:text-white",
       danger:
-        "bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/30 focus:ring-rose-500 active:scale-[0.98]",
+        "bg-[#F07178] hover:bg-[#E85D67] text-white shadow-sm shadow-[#F07178]/20 active:scale-[0.98]",
     };
 
     const sizeStyles = {
-      sm: "text-xs px-2.5 py-1.5 gap-1.5",
+      sm: "text-xs px-3 py-1.5 gap-1.5 font-mono",
       md: "text-sm px-4 py-2 gap-2",
       lg: "text-base px-5 py-2.5 gap-2.5",
     };
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+          <Loader2 className="h-4 w-4 animate-spin shrink-0 text-current" />
         ) : leftIcon ? (
           <span className="shrink-0">{leftIcon}</span>
         ) : null}

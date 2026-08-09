@@ -21,24 +21,24 @@ export function Alert({
 }: AlertProps) {
   const styles = {
     error: {
-      bg: "bg-rose-500/10 border-rose-500/30 text-rose-300",
+      bg: "bg-[#F07178]/10 border-[#F07178]/30 text-[#F07178]",
       icon: AlertCircle,
-      iconColor: "text-rose-400",
+      iconColor: "text-[#F07178]",
     },
     success: {
-      bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
+      bg: "bg-[#45D6A5]/10 border-[#45D6A5]/30 text-[#45D6A5]",
       icon: CheckCircle2,
-      iconColor: "text-emerald-400",
+      iconColor: "text-[#45D6A5]",
     },
     warning: {
-      bg: "bg-amber-500/10 border-amber-500/30 text-amber-300",
+      bg: "bg-[#F3B45B]/10 border-[#F3B45B]/30 text-[#F3B45B]",
       icon: AlertCircle,
-      iconColor: "text-amber-400",
+      iconColor: "text-[#F3B45B]",
     },
     info: {
-      bg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-300",
+      bg: "bg-[#3B82F6]/10 border-[#3B82F6]/30 text-[#3B82F6]",
       icon: Info,
-      iconColor: "text-cyan-400",
+      iconColor: "text-[#3B82F6]",
     },
   }[variant];
 
@@ -46,7 +46,7 @@ export function Alert({
 
   return (
     <div
-      className={`flex items-start gap-3 rounded-xl border p-4 text-sm ${styles.bg} ${className}`}
+      className={`flex items-start gap-3 rounded-[16px] border p-4 text-sm ${styles.bg} ${className}`}
     >
       <Icon size={18} className={`mt-0.5 shrink-0 ${styles.iconColor}`} />
       <div className="flex-1">
@@ -57,7 +57,7 @@ export function Alert({
       {onClose && (
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className="p-1 rounded-lg hover:bg-white/10 text-[#9BA4B5] hover:text-white transition-colors"
         >
           <X size={14} />
         </button>

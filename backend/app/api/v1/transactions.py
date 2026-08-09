@@ -28,11 +28,26 @@ router = APIRouter(prefix="/api/v1/transactions", tags=["transactions"])
 async def list_transactions(
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
+    search: str | None = Query(None, description="Search merchant or category"),
+    category: str | None = Query(None, description="Filter by category"),
+    payment_method: str | None = Query(None, description="Filter by payment method"),
+    source: str | None = Query(None, description="Filter by source (ocr or manual)"),
+    sort_by: str | None = Query("date_desc", description="Sort parameter"),
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> list[Transaction]:
     """Retrieve transactions belonging to the current user."""
-    return await list_user_transactions(current_user.id, limit, offset, session)
+    return await list_user_transactions(
+        user_id=current_user.id,
+        limit=limit,
+        offset=offset,
+        search=search,
+        category=category,
+        payment_method=payment_method,
+        source=source,
+        sort_by=sort_by,
+        session=session,
+    )
 
 
 @router.post(

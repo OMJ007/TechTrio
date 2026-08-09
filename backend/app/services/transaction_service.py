@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.transaction import Transaction, TransactionSource
@@ -14,18 +14,47 @@ from app.schemas.transaction import TransactionCreate, TransactionUpdate
 
 async def list_user_transactions(
     user_id: UUID,
-    limit: int,
-    offset: int,
-    session: AsyncSession,
+    limit: int = 50,
+    offset: int = 0,
+    search: str | None = None,
+    category: str | None = None,
+    payment_method: str | None = None,
+    source: str | None = None,
+    sort_by: str | None = "date_desc",
+    session: AsyncSession = None,
 ) -> list[Transaction]:
-    """Retrieve transactions for a user ordered by date descending."""
-    result = await session.execute(
-        select(Transaction)
-        .where(Transaction.user_id == user_id)
-        .order_by(Transaction.transaction_date.desc())
-        .offset(offset)
-        .limit(limit)
-    )
+    """Retrieve transactions for a user with flexible filtering & sorting."""
+    stmt = select(Transaction).where(Transaction.user_id == user_id)
+
+    if search:
+        search_filter = f"%{search.strip()}%"
+        stmt = stmt.where(
+            or_(
+                Transaction.merchant.ilike(search_filter),
+                Transaction.category.ilike(search_filter),
+            )
+        )
+
+    if category and category.lower() != "all":
+        stmt = stmt.where(Transaction.category == category)
+
+    if payment_method and payment_method.lower() != "all":
+        stmt = stmt.where(Transaction.payment_method == payment_method)
+
+    if source:
+        stmt = stmt.where(Transaction.source == source)
+
+    if sort_by == "amount_desc":
+        stmt = stmt.order_by(Transaction.amount.desc())
+    elif sort_by == "amount_asc":
+        stmt = stmt.order_by(Transaction.amount.asc())
+    elif sort_by == "date_asc":
+        stmt = stmt.order_by(Transaction.transaction_date.asc())
+    else:
+        stmt = stmt.order_by(Transaction.transaction_date.desc())
+
+    stmt = stmt.offset(offset).limit(limit)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
