@@ -68,8 +68,8 @@ class Settings(BaseSettings):
     ANTHROPIC_API_URL: str = "https://api.anthropic.com/v1/messages"
     GROQ_API_KEY: SecretStr | None = Field(default=None)
     GROQ_API_URL: str = "https://api.groq.com/openai/v1/chat/completions"
-    GROQ_MODEL: str = "qwen/qwen3.6-27b"
-    GROQ_OCR_MODEL: str = "qwen/qwen3.6-27b"
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
+    GROQ_OCR_MODEL: str = "qwen/qwen3.8-27b"
 
     # ── RAG / Vector store ────────────────────────────────────────────
     RAG_BACKEND: str = Field(
