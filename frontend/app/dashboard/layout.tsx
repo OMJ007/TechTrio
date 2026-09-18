@@ -22,6 +22,7 @@ import {
   X,
   ChevronRight,
   ShieldCheck,
+  UserCircle,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/useAuthStore";
@@ -39,8 +40,17 @@ const NAV_ITEMS = [
   { name: "Receipts", href: "/dashboard/receipts", icon: FileText },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
   { name: "Alerts", href: "/dashboard/alerts", icon: Bell, badge: "3" },
+  { name: "Profile", href: "/dashboard/profile", icon: UserCircle },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
+
+/** Two-letter monogram from the user's name, falling back to their email. */
+function initials(name?: string | null, email?: string | null): string {
+  const parts = (name?.trim() || email || "").split(/[\s@._-]+/).filter(Boolean);
+  if (parts.length === 0) return "XP";
+  const chars = parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0].slice(0, 2);
+  return chars.toUpperCase();
+}
 
 export default function DashboardLayout({
   children,
@@ -49,7 +59,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { token, logout } = useAuthStore();
+  const { token, user, logout, fetchUser } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ocrOpen, setOcrOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,6 +74,13 @@ export default function DashboardLayout({
       router.replace("/login");
     }
   }, [token, isMounted, router]);
+
+  // Refresh the cached profile so the sidebar reflects server-side changes.
+  useEffect(() => {
+    if (isMounted && token) {
+      fetchUser();
+    }
+  }, [isMounted, token, fetchUser]);
 
   if (!isMounted || !token) return null;
 
@@ -148,15 +165,23 @@ export default function DashboardLayout({
         {/* User Footer Profile */}
         <div className="p-5 border-t border-white/[0.08] bg-black/10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#BFDBFE] to-[#2563EB] text-[#0F172A] flex items-center justify-center font-mono text-xs font-bold shadow-lg shadow-[#3B82F6]/20">
-                XP
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-3 min-w-0 rounded-lg hover:opacity-80 transition-opacity"
+              title="View profile"
+            >
+              <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-[#BFDBFE] to-[#2563EB] text-[#0F172A] flex items-center justify-center font-mono text-xs font-bold shadow-lg shadow-[#3B82F6]/20">
+                {initials(user?.full_name, user?.email)}
               </div>
               <div className="text-left overflow-hidden">
-                <p className="text-xs font-semibold text-white truncate">Pro Account</p>
-                <p className="text-[10px] font-mono text-[#9BA4B5] truncate">pro@xpense.ai</p>
+                <p className="text-xs font-semibold text-white truncate">
+                  {user?.full_name || "My Account"}
+                </p>
+                <p className="text-[10px] font-mono text-[#9BA4B5] truncate">
+                  {user?.email ?? "—"}
+                </p>
               </div>
-            </div>
+            </Link>
             <button
               onClick={handleLogout}
               className="p-1.5 text-[#9BA4B5] hover:text-white hover:bg-[#1B2130] rounded-lg transition-colors"

@@ -16,6 +16,7 @@ import { PieChart as PieIcon, LineChart as LineIcon } from "lucide-react";
 import { ChartContainer } from "@/components/ui/ChartContainer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getCategoryColor, formatCurrency } from "@/lib/colors";
+import { token } from "@/lib/tokens";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -89,7 +90,7 @@ export function CategoryPieChart({
                 {data.map((entry) => (
                   <Cell
                     key={entry.category}
-                    fill={getCategoryColor(entry.category).hex}
+                    fill={token(getCategoryColor(entry.category).token)}
                     stroke="#141824"
                     strokeWidth={2}
                   />
@@ -108,7 +109,7 @@ export function CategoryPieChart({
               <div key={d.category} className="flex items-center gap-2 overflow-hidden">
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: catColor.hex }}
+                  style={{ backgroundColor: token(catColor.token) }}
                 />
                 <span className="truncate text-white font-medium text-xs">{d.category}</span>
                 <span className="ml-auto text-[#9BA4B5] font-mono text-xs tabular-nums">

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, Lock, Mail, IndianRupee, ArrowRight } from "lucide-react";
+import { Sparkles, Lock, Mail, IndianRupee, ArrowRight, User } from "lucide-react";
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register, loading, error, clearError } = useAuthStore();
 
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -47,6 +48,7 @@ export default function RegisterPage() {
       await register({
         email,
         password,
+        full_name: fullName.trim() || undefined,
         monthly_income: monthlyIncome,
         risk_profile: risk,
       });
@@ -82,6 +84,25 @@ export default function RegisterPage() {
 
         {/* ── Form ────────────────────────────────────────────── */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Full Name */}
+          <div>
+            <label htmlFor="full-name" className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] mb-1">
+              Full Name
+            </label>
+            <div className="relative">
+              <input
+                id="full-name"
+                type="text"
+                maxLength={120}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full rounded-lg border border-[#2A3140] bg-[#1B2130] px-3.5 py-2 pl-9 text-xs text-white placeholder-[#9BA4B5] focus:border-[#3B82F6]"
+                placeholder="Alice Sharma"
+              />
+              <User size={14} className="absolute left-3 top-3 text-[#9BA4B5]" />
+            </div>
+          </div>
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] mb-1">

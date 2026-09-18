@@ -20,44 +20,27 @@ export function Alert({
   className = "",
 }: AlertProps) {
   const styles = {
-    error: {
-      bg: "bg-[#F07178]/10 border-[#F07178]/30 text-[#F07178]",
-      icon: AlertCircle,
-      iconColor: "text-[#F07178]",
-    },
-    success: {
-      bg: "bg-[#45D6A5]/10 border-[#45D6A5]/30 text-[#45D6A5]",
-      icon: CheckCircle2,
-      iconColor: "text-[#45D6A5]",
-    },
-    warning: {
-      bg: "bg-[#F3B45B]/10 border-[#F3B45B]/30 text-[#F3B45B]",
-      icon: AlertCircle,
-      iconColor: "text-[#F3B45B]",
-    },
-    info: {
-      bg: "bg-[#3B82F6]/10 border-[#3B82F6]/30 text-[#3B82F6]",
-      icon: Info,
-      iconColor: "text-[#3B82F6]",
-    },
+    error: { tone: "border-negative/30 bg-negative/10", icon: AlertCircle, iconColor: "text-negative" },
+    success: { tone: "border-positive/30 bg-positive/10", icon: CheckCircle2, iconColor: "text-positive" },
+    warning: { tone: "border-warning/30 bg-warning/10", icon: AlertCircle, iconColor: "text-warning" },
+    info: { tone: "border-info/30 bg-info/10", icon: Info, iconColor: "text-info" },
   }[variant];
 
   const Icon = styles.icon;
 
   return (
-    <div
-      className={`flex items-start gap-3 rounded-[16px] border p-4 text-sm ${styles.bg} ${className}`}
-    >
+    <div className={`flex items-start gap-3 rounded-card border p-stack-md ${styles.tone} ${className}`}>
       <Icon size={18} className={`mt-0.5 shrink-0 ${styles.iconColor}`} />
       <div className="flex-1">
-        {title && <h5 className="font-semibold text-white mb-0.5">{title}</h5>}
-        <p className="text-xs leading-relaxed opacity-90">{message}</p>
-        {action && <div className="mt-2">{action}</div>}
+        {title && <h5 className="text-h3 text-ink-primary">{title}</h5>}
+        <p className="text-body-sm text-ink-secondary">{message}</p>
+        {action && <div className="mt-stack-sm">{action}</div>}
       </div>
       {onClose && (
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-white/10 text-[#9BA4B5] hover:text-white transition-colors"
+          aria-label="Dismiss"
+          className="rounded-chip p-1 text-ink-muted transition-colors hover:bg-surface-raised hover:text-ink-primary"
         >
           <X size={14} />
         </button>

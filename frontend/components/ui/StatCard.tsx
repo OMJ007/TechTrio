@@ -13,7 +13,7 @@ export interface StatCardProps {
   changeLabel?: string; // e.g. "vs last month"
   icon?: React.ReactNode;
   subtitle?: string;
-  variant?: "surface" | "raised";
+  variant?: "base" | "raised";
   isPositiveGood?: boolean; // if true (default for income), positive change is positive green; if false (e.g. expenses), positive change is negative red
   aiGenerated?: boolean;
 }
@@ -26,7 +26,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   changeLabel = "vs last month",
   icon,
   subtitle,
-  variant = "surface",
+  variant = "base",
   isPositiveGood = true,
   aiGenerated = false,
 }) => {

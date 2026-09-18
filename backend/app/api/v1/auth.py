@@ -22,7 +22,14 @@ from app.core.security import (
 )
 from app.db import get_session
 from app.models.user import User
-from app.schemas.user import Token, UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    EmailUpdate,
+    PasswordUpdate,
+    Token,
+    UserCreate,
+    UserRead,
+    UserUpdate,
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -88,6 +95,7 @@ async def register(
     user = User(
         email=user_data.email,
         password_hash=hashed_pwd,
+        full_name=user_data.full_name,
         monthly_income=user_data.monthly_income,
         risk_profile=user_data.risk_profile,
     )
@@ -156,12 +164,92 @@ async def update_me(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> User:
-    """Update profile parameters (monthly income, risk profile)."""
-    if user_update.monthly_income is not None:
-        current_user.monthly_income = user_update.monthly_income
-    if user_update.risk_profile is not None:
-        current_user.risk_profile = user_update.risk_profile
+    """Update personal info and financial profile parameters.
+
+    Only fields present in the request body are applied, so the personal-info
+    and financial-profile forms can post independently.
+    """
+    updates = user_update.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        # Free-text fields come back as "" when the user clears them; store
+        # NULL instead so the profile reads as genuinely unset.
+        if isinstance(value, str) and field != "currency" and not value.strip():
+            value = None
+        setattr(current_user, field, value)
 
     await session.commit()
     await session.refresh(current_user)
     return current_user
+
+
+@router.put(
+    "/me/email",
+    response_model=UserRead,
+    summary="Change the current user's login email",
+)
+async def update_email(
+    payload: EmailUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+) -> User:
+    """Change the login email after re-confirming the current password."""
+    is_valid_pwd = await run_in_threadpool(
+        verify_password, payload.current_password, current_user.password_hash
+    )
+    if not is_valid_pwd:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+
+    new_email = payload.new_email.lower()
+    if new_email == current_user.email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The new email matches your current email",
+        )
+
+    result = await session.execute(select(User).where(User.email == new_email))
+    if result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A user with this email already exists",
+        )
+
+    current_user.email = new_email
+    await session.commit()
+    await session.refresh(current_user)
+    return current_user
+
+
+@router.put(
+    "/me/password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Change the current user's password",
+)
+async def update_password(
+    payload: PasswordUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    """Replace the account password after verifying the existing one."""
+    is_valid_pwd = await run_in_threadpool(
+        verify_password, payload.current_password, current_user.password_hash
+    )
+    if not is_valid_pwd:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+
+    if payload.new_password == payload.current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The new password must differ from your current password",
+        )
+
+    current_user.password_hash = await run_in_threadpool(
+        hash_password, payload.new_password
+    )
+    await session.commit()

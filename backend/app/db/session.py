@@ -8,6 +8,7 @@ all tables and ``close_db`` during shutdown to dispose of the engine.
 import logging
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import inspect, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
@@ -52,6 +53,46 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+def _sync_added_columns(conn) -> None:
+    """Add columns that exist on the models but not yet in the database.
+
+    ``create_all`` only creates missing *tables*, so a table that predates a
+    model change keeps its old shape.  This project has no migration tool, so
+    new nullable/defaulted columns are patched in here instead.
+    """
+    inspector = inspect(conn)
+
+    for table in Base.metadata.sorted_tables:
+        if not inspector.has_table(table.name):
+            continue
+
+        existing = {col["name"] for col in inspector.get_columns(table.name)}
+        for column in table.columns:
+            if column.name in existing:
+                continue
+
+            # Only additive, safe changes: the column must have a value the
+            # database can backfill existing rows with.
+            if not column.nullable and column.server_default is None:
+                logger.warning(
+                    "Skipping auto-add of non-nullable column %s.%s (no server default); "
+                    "a manual migration is required.",
+                    table.name,
+                    column.name,
+                )
+                continue
+
+            ddl = column.type.compile(conn.dialect)
+            if not column.nullable:
+                default = column.server_default.arg
+                ddl += f" NOT NULL DEFAULT '{default}'"
+
+            conn.execute(
+                text(f'ALTER TABLE {table.name} ADD COLUMN "{column.name}" {ddl}')
+            )
+            logger.info("Added missing column %s.%s", table.name, column.name)
+
+
 async def init_db() -> None:
     """Create all tables registered on ``Base.metadata``.
 
@@ -62,6 +103,7 @@ async def init_db() -> None:
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(_sync_added_columns)
         logger.info("Database tables initialized successfully using %s", settings.DATABASE_URL)
     except Exception as exc:
         if not str(settings.DATABASE_URL).startswith("sqlite"):
@@ -80,6 +122,7 @@ async def init_db() -> None:
             )
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+                await conn.run_sync(_sync_added_columns)
             logger.info("Database initialized successfully using fallback SQLite database: %s", fallback_url)
         else:
             raise

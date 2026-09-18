@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, FormEvent, useCallback } from "react";
-import { User as UserIcon, Shield, Check } from "lucide-react";
+import Link from "next/link";
+import { User as UserIcon, Check } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -76,7 +77,12 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold text-white tracking-tight">Account &amp; Workspace Settings</h1>
         <p className="text-xs font-mono text-[#9BA4B5]">
-          Manage profile parameters, security, AI advisor personas, and notification thresholds.
+          Manage financial profile parameters, AI advisor personas, and notification thresholds.
+          Personal details and login credentials live on the{" "}
+          <Link href="/dashboard/profile" className="text-[#3B82F6] hover:underline">
+            Profile
+          </Link>{" "}
+          page.
         </p>
       </div>
 

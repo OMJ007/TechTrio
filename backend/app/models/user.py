@@ -36,6 +36,27 @@ class User(Base):
         String(128),
         nullable=False,
     )
+
+    # ── Personal information ───────────────────────────────────────
+    full_name: Mapped[str | None] = mapped_column(
+        String(120),
+        nullable=True,
+    )
+    phone: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+    occupation: Mapped[str | None] = mapped_column(
+        String(120),
+        nullable=True,
+    )
+    currency: Mapped[str] = mapped_column(
+        String(3),
+        default="INR",
+        server_default="INR",
+        nullable=False,
+    )
+
     monthly_income: Mapped[float] = mapped_column(
         Float,
         default=0.0,

@@ -3,19 +3,27 @@
 import { type HTMLAttributes, forwardRef } from "react";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: "surface" | "raised";
+  /** Elevation level. `base` sits on the canvas; `raised` nests inside a base card. */
+  variant?: "base" | "raised" | "overlay";
   hoverLift?: boolean;
 }
 
+/**
+ * Elevation is expressed as a border + background shift, never a drop shadow —
+ * shadows read as grey smudge on a near-black canvas.
+ */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "surface", hoverLift = false, className = "", children, ...props }, ref) => {
-    const bgStyle = variant === "raised" ? "bg-[#1B2130]/90" : "bg-[#141824]/75";
-    const hoverStyle = hoverLift ? "hover-lift" : "";
+  ({ variant = "base", hoverLift = false, className = "", children, ...props }, ref) => {
+    const elevation = {
+      base: "elev-base",
+      raised: "elev-raised",
+      overlay: "elev-overlay",
+    }[variant];
 
     return (
       <div
         ref={ref}
-        className={`rounded-[20px] border border-white/[0.09] ${bgStyle} backdrop-blur-xl p-6 shadow-[0_18px_60px_-40px_rgba(0,0,0,.95)] ${hoverStyle} ${className}`}
+        className={`rounded-card p-card-pad ${elevation} ${hoverLift ? "hover-lift" : ""} ${className}`}
         {...props}
       >
         {children}
@@ -31,7 +39,7 @@ export const CardHeader = forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <div
     ref={ref}
-    className={`flex items-center justify-between pb-4 border-b border-white/[0.08] ${className}`}
+    className={`flex items-center justify-between border-b border-line-subtle pb-stack-md ${className}`}
     {...props}
   >
     {children}
@@ -43,10 +51,7 @@ export const CardTitle = forwardRef<
   HTMLHeadingElement,
   HTMLAttributes<HTMLHeadingElement>
 >(({ className = "", children, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={`text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA4B5] ${className}`}
-  >
+  <h3 ref={ref} className={`text-overline uppercase text-ink-muted ${className}`} {...props}>
     {children}
   </h3>
 ));
@@ -56,7 +61,7 @@ export const CardContent = forwardRef<
   HTMLDivElement,
   HTMLAttributes<HTMLDivElement>
 >(({ className = "", children, ...props }, ref) => (
-  <div ref={ref} className={`pt-4 ${className}`} {...props}>
+  <div ref={ref} className={`pt-stack-md ${className}`} {...props}>
     {children}
   </div>
 ));

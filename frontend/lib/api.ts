@@ -16,6 +16,37 @@ export function getToken(): string | null {
   }
 }
 
+/** A single entry of FastAPI's 422 validation payload. */
+interface ValidationError {
+  loc: (string | number)[];
+  msg: string;
+}
+
+/**
+ * Turn a FastAPI ``detail`` payload into a human-readable message.
+ *
+ * Validation failures arrive as an array of per-field objects, which would
+ * otherwise stringify to "[object Object]" in the UI.
+ */
+function formatDetail(detail: unknown, fallback: string): string {
+  if (typeof detail === "string") return detail;
+
+  if (Array.isArray(detail)) {
+    const messages = (detail as ValidationError[])
+      .map((err) => {
+        // Drop the leading "body"/"query" segment to leave the field name.
+        const field = err.loc?.filter((p) => p !== "body").join(".");
+        const msg = err.msg ?? "is invalid";
+        return field ? `${field.replace(/_/g, " ")}: ${msg}` : msg;
+      })
+      .filter(Boolean);
+
+    if (messages.length > 0) return messages.join("; ");
+  }
+
+  return fallback;
+}
+
 /**
  * Thin wrapper around `fetch` that injects the JWT ``Authorization``
  * header and parses JSON responses.
@@ -46,7 +77,7 @@ export async function apiFetch<T = unknown>(
     let detail = res.statusText;
     try {
       const body = await res.json();
-      detail = body.detail ?? detail;
+      detail = formatDetail(body.detail, detail);
     } catch {
       // use fallback
     }
@@ -85,7 +116,7 @@ export async function apiUpload<T = unknown>(
     let detail = res.statusText;
     try {
       const body = await res.json();
-      detail = body.detail ?? detail;
+      detail = formatDetail(body.detail, detail);
     } catch {
       // use fallback
     }

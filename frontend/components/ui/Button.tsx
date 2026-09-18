@@ -27,25 +27,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none active:scale-[.98]";
+      "inline-flex items-center justify-center rounded-chip font-medium transition-colors duration-150 " +
+      "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400 " +
+      "disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none active:scale-[.98]";
 
     const variantStyles = {
-      primary:
-        "bg-[#3B82F6] hover:bg-[#93C5FD] text-[#10131B] shadow-lg shadow-[#3B82F6]/20",
-      secondary:
-        "bg-white/[0.06] hover:bg-white/[0.1] text-[#C9D1DE] hover:text-white border border-white/[0.1]",
-      outline:
-        "bg-transparent hover:bg-white/[0.06] text-[#B6BFCE] hover:text-white border border-white/[0.1]",
-      ghost:
-        "bg-transparent hover:bg-white/[0.06] text-[#B6BFCE] hover:text-white",
-      danger:
-        "bg-[#F07178] hover:bg-[#E85D67] text-white shadow-sm shadow-[#F07178]/20 active:scale-[0.98]",
+      // accent-ink on accent-500 measures 5.59:1
+      primary: "bg-accent text-accent-ink hover:bg-accent-600",
+      secondary: "bg-surface-inset text-ink-secondary hover:text-ink-primary border border-line",
+      outline: "bg-transparent text-ink-secondary hover:text-ink-primary border border-line-interactive hover:border-accent-400",
+      ghost: "bg-transparent text-ink-secondary hover:text-ink-primary hover:bg-surface-raised",
+      danger: "bg-negative text-canvas hover:opacity-90",
     };
 
     const sizeStyles = {
-      sm: "text-xs px-3 py-1.5 gap-1.5 font-mono",
-      md: "text-sm px-4 py-2 gap-2",
-      lg: "text-base px-5 py-2.5 gap-2.5",
+      sm: "text-label px-3 py-1.5 gap-1.5",
+      md: "text-label px-4 py-2 gap-2",
+      lg: "text-body px-5 py-2.5 gap-2.5",
     };
 
     return (
@@ -56,7 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin shrink-0 text-current" />
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-current" />
         ) : leftIcon ? (
           <span className="shrink-0">{leftIcon}</span>
         ) : null}

@@ -10,6 +10,10 @@ import { API_BASE, apiFetch } from "@/lib/api";
 export interface UserRead {
   id: string;
   email: string;
+  full_name: string | null;
+  phone: string | null;
+  occupation: string | null;
+  currency: string;
   monthly_income: number;
   risk_profile: string;
   created_at: string;
@@ -23,6 +27,7 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string;
   password: string;
+  full_name?: string;
   monthly_income: number;
   risk_profile?: string;
 }
@@ -41,6 +46,9 @@ interface AuthState {
 
   /** Fetch the current user profile from the backend. */
   fetchUser: () => Promise<void>;
+
+  /** Replace the cached profile after a local update (e.g. the profile page). */
+  setUser: (user: UserRead) => void;
 
   /** Clear auth state and remove token. */
   logout: () => void;
@@ -126,6 +134,9 @@ export const useAuthStore = create<AuthState>()(
           set({ token: null, user: null });
         }
       },
+
+      // ── setUser ──────────────────────────────────────────────────
+      setUser: (user: UserRead) => set({ user }),
 
       // ── logout ───────────────────────────────────────────────────
       logout: () => {

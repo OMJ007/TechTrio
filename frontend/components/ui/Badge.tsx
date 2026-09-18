@@ -6,7 +6,7 @@ import { getCategoryColor } from "@/lib/colors";
 
 export interface BadgeProps {
   children: React.ReactNode;
-  variant?: "default" | "positive" | "negative" | "warning" | "ai" | "category" | "outline";
+  variant?: "default" | "positive" | "negative" | "warning" | "info" | "ai" | "category" | "outline";
   category?: string;
   size?: "sm" | "md";
   className?: string;
@@ -19,14 +19,13 @@ export const Badge: React.FC<BadgeProps> = ({
   size = "sm",
   className = "",
 }) => {
-  const sizeStyles = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs";
+  const sizeStyles = size === "sm" ? "px-2 py-0.5 text-overline" : "px-2.5 py-1 text-label";
+  const base = "inline-flex items-center gap-1 rounded-chip border font-medium";
 
   if (variant === "category" && category) {
     const color = getCategoryColor(category);
     return (
-      <span
-        className={`inline-flex items-center rounded-full font-mono font-medium border ${color.bgClass} ${color.textClass} ${color.borderClass} ${sizeStyles} ${className}`}
-      >
+      <span className={`${base} ${color.bgClass} ${color.textClass} ${color.borderClass} ${sizeStyles} ${className}`}>
         {category}
       </span>
     );
@@ -34,26 +33,25 @@ export const Badge: React.FC<BadgeProps> = ({
 
   if (variant === "ai") {
     return (
-      <span
-        className={`inline-flex items-center gap-1 rounded-full font-mono font-medium bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/30 ${sizeStyles} ${className}`}
-      >
-        <Sparkles className="h-3 w-3 text-[#38BDF8]" />
+      <span className={`${base} border-accent-400/30 bg-accent/10 text-accent-300 ${sizeStyles} ${className}`}>
+        <Sparkles className="h-3 w-3" />
         {children}
       </span>
     );
   }
 
   const variantStyles = {
-    default: "bg-white/[0.07] text-[#B6BFCE] border border-white/[0.1]",
-    positive: "bg-[#45D6A5]/10 text-[#45D6A5] border border-[#45D6A5]/30",
-    negative: "bg-[#F07178]/10 text-[#F07178] border border-[#F07178]/30",
-    warning: "bg-[#F3B45B]/10 text-[#F3B45B] border border-[#F3B45B]/30",
-    outline: "bg-transparent text-[#9BA4B5] border border-[#2A3140]",
+    default: "bg-surface-inset text-ink-secondary border-line",
+    positive: "bg-positive/10 text-positive border-positive/30",
+    negative: "bg-negative/10 text-negative border-negative/30",
+    warning: "bg-warning/10 text-warning border-warning/30",
+    info: "bg-info/10 text-info border-info/30",
+    outline: "bg-transparent text-ink-muted border-line",
   };
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-mono font-medium ${variantStyles[variant as keyof typeof variantStyles]} ${sizeStyles} ${className}`}
+      className={`${base} ${variantStyles[variant as keyof typeof variantStyles]} ${sizeStyles} ${className}`}
     >
       {children}
     </span>
