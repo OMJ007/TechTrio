@@ -62,7 +62,17 @@ class ChatResponse(BaseModel):
 class KnowledgeStatus(BaseModel):
     """Diagnostic description of the retrieval stack."""
 
-    vector_store: str = Field(description="'chroma' or 'keyword-fallback'")
+    vector_store: str = Field(
+        description="'chroma' (vector search), 'lite' (BM25), or 'keyword-fallback'",
+    )
+    backend_reason: str = Field(
+        default="",
+        description="Why this backend was selected",
+    )
+    memory_limit_mb: int | None = Field(
+        default=None,
+        description="Memory ceiling detected for the process, in MB",
+    )
     embeddings: str = Field(description="Embedding backend in use")
     splitter: str = Field(description="Text splitter in use")
     documents: int = Field(description="Number of indexed chunks")

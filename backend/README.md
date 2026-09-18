@@ -49,10 +49,38 @@ The advisor answers with retrieved context. The stack lives in `app/rag/`:
 | `documents/*.md` | The knowledge corpus — one markdown file per topic |
 | `doc_loader.py` | Frontmatter parsing and section splitting for those files |
 | `knowledge.py` | Short seed facts, tagged by topic |
+| `runtime.py` | Picks a retrieval backend that fits the host's memory |
 | `embeddings.py` | Chroma's ONNX MiniLM model, with a hashing fallback |
 | `vector_store.py` | A LangChain `VectorStore` backed by a persistent Chroma collection |
-| `knowledge_base.py` | Chunking, seeding, indexing, persona-aware similarity search |
+| `lite_store.py` | In-memory BM25 — no chromadb, no onnxruntime |
+| `knowledge_base.py` | Chunking, seeding, indexing, persona-aware retrieval |
 | `chain.py` | The LCEL chain: retrieve → prompt → LLM → text |
+
+### Two backends, and why
+
+`chroma` embeds each chunk with a local ONNX MiniLM model and searches by
+cosine similarity. It matches on meaning, so "how do I pay less tax" finds a
+passage that only says "deduction". It also needs roughly 1.5 GB: `chromadb`,
+`onnxruntime` and an 80 MB model that re-downloads on every boot if the
+filesystem is ephemeral.
+
+`lite` is Okapi BM25 held in memory — a few hundred kilobytes and no model. On
+a corpus this size it is a strong retriever, not a token fallback, because the
+useful signal in these questions is specific vocabulary: *80C*, *ELSS*, *HRA*,
+*moat*. What it gives up is synonymy.
+
+`RAG_BACKEND` selects one. The default, `auto`, reads the cgroup memory limit —
+the number that actually gets the process OOM-killed — and picks `lite` below
+1.5 GB. If there is no cgroup limit but an environment variable marks a managed
+host (Render, Fly, Heroku, Cloud Run), it also picks `lite`, because host RAM
+there says far more than the instance may use. A failure to build the chosen
+backend falls back to `lite`, then to a plain keyword scan.
+
+**On a 512 MB instance, leave it on `auto` or set `lite` explicitly.** Setting
+`chroma` there will OOM on boot.
+
+`GET /api/v1/advisor/knowledge/status` reports which backend is live, why it
+was chosen, and the memory limit that was detected.
 
 ### Adding knowledge
 
@@ -89,14 +117,14 @@ and the merged list is truncated to `RAG_TOP_K`. So Buffett leads with
 value-investing passages but can still cite an emergency-fund rule, and a tax
 question reaches the tax documents whoever is asked.
 
-On first run the embedding model (~80 MB) is downloaded and the corpus is
-indexed into `chroma_db/`; both are cached afterwards. Seeding is idempotent —
-document IDs are content hashes, so editing `knowledge.py` and restarting
-updates changed entries instead of duplicating them.
+Under `chroma`, the first run downloads the embedding model (~80 MB) and
+indexes the corpus into `chroma_db/`; both are cached afterwards. Under `lite`
+the index is rebuilt at startup, which takes milliseconds. Seeding is
+idempotent either way — document IDs are content hashes, so editing a document
+and restarting updates the changed entries instead of duplicating them.
 
-If `chromadb` or `langchain-core` cannot be loaded, retrieval degrades to a
-keyword search over the seed corpus and the API keeps working. Check which
-path is active:
+If `langchain-core` cannot be loaded, retrieval degrades to a keyword search
+over the corpus and the API keeps working. Check which path is active:
 
 ```
 GET /api/v1/advisor/knowledge/status

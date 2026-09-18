@@ -72,6 +72,14 @@ class Settings(BaseSettings):
     GROQ_OCR_MODEL: str = "qwen/qwen3.6-27b"
 
     # ── RAG / Vector store ────────────────────────────────────────────
+    RAG_BACKEND: str = Field(
+        default="auto",
+        description=(
+            "Retrieval backend: 'chroma' (vector search with a local ONNX "
+            "embedding model, needs ~1.5 GB), 'lite' (in-memory BM25, no extra "
+            "dependencies), or 'auto' to pick from the container's memory limit"
+        ),
+    )
     CHROMA_DIR: str = Field(
         default="./chroma_db",
         description="Directory the persistent Chroma vector store lives in",

@@ -4,16 +4,29 @@ Pipeline
 --------
 1. ``RecursiveCharacterTextSplitter`` splits source text into overlapping
    chunks sized by ``RAG_CHUNK_SIZE``/``RAG_CHUNK_OVERLAP``.
-2. Each chunk is embedded locally (see :mod:`app.rag.embeddings`) and
-   upserted into a persistent Chroma collection under a content-hash ID.
-3. Queries run a cosine similarity search and come back as LangChain
-   ``Document`` objects carrying their topic and score.
+2. The chunks are indexed into whichever backend fits the host.
+3. Queries come back as LangChain ``Document`` objects carrying their source,
+   section, topic, and a 0–1 score.
+
+Two backends
+------------
+``chroma``
+    Vector search: chunks embedded locally by an ONNX MiniLM model and stored
+    in a persistent Chroma collection. Better retrieval — it matches on
+    meaning, not just vocabulary — but ``chromadb`` plus ``onnxruntime`` plus
+    the 80 MB model need roughly 1.5 GB to be comfortable.
+``lite``
+    In-memory BM25 (:mod:`app.rag.lite_store`). No extra dependencies, a few
+    hundred kilobytes, and strong on the specific-vocabulary questions this
+    app gets. This is what runs on a small container.
+
+``RAG_BACKEND`` picks one explicitly; the default inspects the cgroup memory
+limit (see :mod:`app.rag.runtime`). If the chosen backend cannot be built, the
+knowledge base falls back to BM25 and then to a keyword scan rather than
+failing the request — retrieval must never 500 the API.
 
 Everything is built lazily on first use and guarded by a lock, so importing
-this module is free and a cold start never blocks the event loop more than
-once.  If the stack cannot be built at all — langchain-core missing, chromadb
-broken — the knowledge base degrades to a keyword search over the seed
-corpus rather than failing the request.
+this module is free and a cold start pays the cost once.
 """
 
 from __future__ import annotations
@@ -26,6 +39,7 @@ from typing import Any, Iterable, Sequence
 from app.core.config import settings
 from app.rag.doc_loader import SHARED_PERSONA, iter_document_chunks, load_documents
 from app.rag.knowledge import KNOWLEDGE_CHUNKS, SOURCE_LABELS, iter_chunks
+from app.rag.runtime import memory_limit_bytes, select_backend
 from app.rag.vector_store import ChromaVectorStore, Document
 
 logger = logging.getLogger(__name__)
@@ -66,48 +80,80 @@ class KnowledgeBase:
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._store: ChromaVectorStore | None = None
+        self._store: Any = None
         self._splitter: Any = None
         self._client: Any = None
         self._backend: str = "uninitialised"
+        self._embeddings_backend: str = "none"
+        self._backend_reason: str = ""
         self._error: str | None = None
         self._initialised = False
 
     # ── Construction ─────────────────────────────────────────────────
     def _initialise(self) -> None:
-        """Build the splitter, embeddings, and store exactly once."""
+        """Build the retriever exactly once, choosing a backend that fits."""
         if self._initialised:
             return
         with self._lock:
             if self._initialised:
                 return
-            try:
-                from app.rag.embeddings import build_embeddings
-                from app.rag.vector_store import open_collection
 
-                embeddings, backend = build_embeddings()
-                self._backend = backend
+            backend, reason = select_backend(settings.RAG_BACKEND)
+            self._backend_reason = reason
+            logger.info("Retrieval backend: %s (%s)", backend, reason)
+
+            try:
                 self._splitter = _build_splitter()
-                self._client, collection = open_collection(
-                    settings.CHROMA_DIR, settings.RAG_COLLECTION
-                )
-                self._store = ChromaVectorStore(collection, embeddings)
+                if backend == "chroma":
+                    self._build_chroma()
+                else:
+                    self._build_lite()
                 self._seed_corpus()
                 logger.info(
-                    "Knowledge base ready (embeddings=%s, chunks=%d)",
-                    backend,
+                    "Knowledge base ready (backend=%s, embeddings=%s, chunks=%d)",
+                    self._backend,
+                    self._embeddings_backend,
                     self._store.count(),
                 )
             except Exception as exc:  # noqa: BLE001 - retrieval must never 500 the API
                 self._error = str(exc)
-                self._store = None
                 logger.warning(
-                    "Vector knowledge base unavailable (%s); falling back to "
-                    "keyword retrieval over the seed corpus.",
+                    "%s backend unavailable (%s); retrying with the in-memory "
+                    "BM25 index.",
+                    backend,
                     exc,
                 )
+                try:
+                    self._build_lite()
+                    self._seed_corpus()
+                except Exception as inner:  # noqa: BLE001
+                    self._error = f"{exc}; lite backend also failed: {inner}"
+                    self._store = None
+                    logger.error("No retrieval backend could be built", exc_info=True)
             finally:
                 self._initialised = True
+
+    def _build_chroma(self) -> None:
+        """Build the persistent Chroma store with local ONNX embeddings."""
+        from app.rag.embeddings import build_embeddings
+        from app.rag.vector_store import open_collection
+
+        embeddings, embeddings_backend = build_embeddings()
+        self._client, collection = open_collection(
+            settings.CHROMA_DIR, settings.RAG_COLLECTION
+        )
+        self._store = ChromaVectorStore(collection, embeddings)
+        self._backend = "chroma"
+        self._embeddings_backend = embeddings_backend
+
+    def _build_lite(self) -> None:
+        """Build the in-memory BM25 index — no chromadb, no onnxruntime."""
+        from app.rag.lite_store import BM25Store
+
+        self._client = None
+        self._store = BM25Store()
+        self._backend = "lite"
+        self._embeddings_backend = "none (lexical BM25)"
 
     def _seed_corpus(self) -> None:
         """Index the bundled corpus and the markdown documents.
@@ -157,12 +203,15 @@ class KnowledgeBase:
     def status(self) -> dict[str, Any]:
         """Describe the knowledge base — handy for a health endpoint."""
         self._initialise()
+        limit = memory_limit_bytes()
         return {
-            "vector_store": "chroma" if self._store is not None else "keyword-fallback",
-            "embeddings": self._backend,
+            "vector_store": self._backend if self._store is not None else "keyword-fallback",
+            "backend_reason": self._backend_reason,
+            "memory_limit_mb": (limit // (1024 * 1024)) if limit else None,
+            "embeddings": self._embeddings_backend,
             "splitter": "recursive-character" if self._splitter else "none",
             "documents": self._store.count() if self._store is not None else len(KNOWLEDGE_CHUNKS),
-            "collection": settings.RAG_COLLECTION,
+            "collection": settings.RAG_COLLECTION if self._backend == "chroma" else "in-memory",
             "source_documents": len(load_documents()),
             "error": self._error,
         }
@@ -201,6 +250,7 @@ class KnowledgeBase:
             self._client = None
             self._initialised = False
             self._error = None
+            self._backend = "uninitialised"
         self._initialise()
 
     # ── Reads ────────────────────────────────────────────────────────
@@ -229,13 +279,23 @@ class KnowledgeBase:
             return _keyword_search(query, k, persona)
 
         try:
-            general = self._store.similarity_search_with_score(query, k)
-            scoped = self._persona_search(query, k, persona) if persona else []
+            if self._backend == "lite":
+                # BM25 applies the persona boost inside its own ranking, so the
+                # two-search merge is unnecessary here.
+                merged = self._store.search(
+                    query,
+                    k,
+                    persona=persona,
+                    persona_boost=_PERSONA_BOOST,
+                    shared_persona=SHARED_PERSONA,
+                )
+            else:
+                general = self._store.similarity_search_with_score(query, k)
+                scoped = self._persona_search(query, k, persona) if persona else []
+                merged = _merge_results(scoped, general, boost=_PERSONA_BOOST)
         except Exception:  # noqa: BLE001
-            logger.warning("Vector search failed for %.80s", query, exc_info=True)
+            logger.warning("Retrieval failed for %.80s", query, exc_info=True)
             return _keyword_search(query, k, persona)
-
-        merged = _merge_results(scoped, general, boost=_PERSONA_BOOST)
 
         # An all-below-threshold result usually means the store is healthy but
         # the question is off-topic: returning nothing is the honest answer.
@@ -271,7 +331,7 @@ class KnowledgeBase:
         base class is unavailable, so the chain builds either way.
         """
         self._initialise()
-        if self._store is not None:
+        if self._store is not None and self._backend == "chroma":
             try:
                 search_kwargs = {"k": settings.RAG_TOP_K, **kwargs.pop("search_kwargs", {})}
                 return self._store.as_retriever(search_kwargs=search_kwargs, **kwargs)
