@@ -21,6 +21,22 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _dialect_name(session: AsyncSession) -> str:
+    """Return the SQL dialect backing *session* (``"sqlite"``, ``"postgresql"``…).
+
+    ``AsyncSession.bind`` is not part of the public async API and is absent on
+    sessions built by ``async_sessionmaker``, so the bind is resolved through
+    ``get_bind()`` and any failure degrades to an empty string rather than
+    raising mid-query.
+    """
+    try:
+        bind = session.get_bind()
+    except Exception:  # noqa: BLE001 - dialect detection must never break a query
+        return ""
+    dialect = getattr(bind, "dialect", None)
+    return getattr(dialect, "name", "") or ""
+
+
 async def get_expense_summary(
     current_user: User,
     period: str,
@@ -103,10 +119,9 @@ async def get_spending_trends(
     """Return daily aggregated spending over the timeframe."""
     now = _now_utc()
     delta_days = {"7d": 7, "30d": 30, "90d": 90}
-    since = now - timedelta(days=delta_days[timeframe])
+    since = now - timedelta(days=delta_days.get(timeframe, 30))
 
-    is_sqlite = session.bind is not None and session.bind.dialect.name == "sqlite"
-    if is_sqlite:
+    if _dialect_name(session) == "sqlite":
         day_col = func.strftime("%Y-%m-%d", Transaction.transaction_date).label("day")
     else:
         day_col = func.date_trunc("day", Transaction.transaction_date).label("day")

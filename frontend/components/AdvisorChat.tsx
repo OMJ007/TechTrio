@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { Send, User, Sparkles, StopCircle } from "lucide-react";
+import { BookOpen, Send, User, Sparkles, StopCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -22,9 +22,20 @@ const SUGGESTED_PROMPTS = [
   "What should I review before month-end?",
 ];
 
+/** A knowledge-base passage the advisor retrieved before answering. */
+interface Citation {
+  text: string;
+  source: string;
+  topic?: string | null;
+  section?: string | null;
+  score?: number | null;
+  persona_match?: boolean;
+}
+
 interface Message {
   role: "user" | "assistant";
   text: string;
+  citations?: Citation[];
 }
 
 // ── Custom Markdown Components ─────────────────────────────────────────
@@ -170,6 +181,7 @@ export default function AdvisorChat() {
       const decoder = new TextDecoder();
       let buffer = "";
       let fullReply = "";
+      let citations: Citation[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -185,11 +197,22 @@ export default function AdvisorChat() {
 
           try {
             const parsed = JSON.parse(trimmed.slice(6));
+
+            // The opening event carries the retrieved knowledge-base passages.
+            if (parsed.type === "start" && Array.isArray(parsed.citations)) {
+              citations = parsed.citations as Citation[];
+              setMessages((prev) => {
+                const next = [...prev];
+                next[next.length - 1] = { role: "assistant", text: fullReply, citations };
+                return next;
+              });
+            }
+
             if (parsed.type === "chunk" && parsed.text) {
               fullReply += parsed.text;
               setMessages((prev) => {
                 const next = [...prev];
-                next[next.length - 1] = { role: "assistant", text: fullReply };
+                next[next.length - 1] = { role: "assistant", text: fullReply, citations };
                 return next;
               });
             }
@@ -297,6 +320,39 @@ export default function AdvisorChat() {
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#38BDF8] [animation-delay:0.15s]" />
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#38BDF8] [animation-delay:0.3s]" />
                 </span>
+              )}
+
+              {msg.role === "assistant" && msg.citations && msg.citations.length > 0 && (
+                <details className="mt-2.5 border-t border-white/[0.08] pt-2">
+                  <summary className="flex cursor-pointer items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#7E8799] hover:text-[#38BDF8]">
+                    <BookOpen size={11} />
+                    {msg.citations.length} knowledge source
+                    {msg.citations.length === 1 ? "" : "s"}
+                  </summary>
+                  <ul className="mt-2 space-y-1.5">
+                    {msg.citations.map((citation, index) => (
+                      <li
+                        key={index}
+                        className="rounded-lg border border-white/[0.07] bg-black/20 px-2.5 py-1.5"
+                      >
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#38BDF8]">
+                          {citation.source}
+                          {citation.section && citation.section !== citation.source && (
+                            <span className="text-[#7E8799]"> › {citation.section}</span>
+                          )}
+                        </span>
+                        {typeof citation.score === "number" && (
+                          <span className="ml-1.5 text-[10px] font-mono tabular-nums text-[#7E8799]">
+                            {Math.round(citation.score * 100)}% match
+                          </span>
+                        )}
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-[#9BA4B5]">
+                          {citation.text}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
               )}
             </div>
 

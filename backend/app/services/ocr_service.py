@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -87,19 +88,43 @@ def extract_text_with_groq_vision(
     reply = strip_json_fences(reply)
 
 
-    data: dict[str, Any] = json.loads(reply)
+    try:
+        data: dict[str, Any] = json.loads(reply)
+    except json.JSONDecodeError:
+        # The model answered in prose instead of JSON.  The transcription is
+        # still useful, so hand it back as raw text and let the regex parser
+        # take over rather than failing the whole upload.
+        logger.warning("Groq Vision returned non-JSON output; falling back to raw text")
+        return reply, 0.6, None
+
+    if not isinstance(data, dict):
+        return reply, 0.6, None
+
     raw_text = str(data.get("raw_text", "")).strip()
 
     # Format extracted fields
     extracted = {
         "merchant": data.get("merchant"),
-        "amount": float(data["amount"]) if data.get("amount") is not None else None,
+        "amount": _coerce_amount(data.get("amount")),
         "date": data.get("date"),
         "upi_id": data.get("upi_id"),
         "transaction_id": data.get("transaction_id"),
     }
 
     return raw_text, 0.95, extracted
+
+
+def _coerce_amount(value: Any) -> float | None:
+    """Best-effort conversion of an LLM-supplied amount to a float."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    cleaned = re.sub(r"[^\d.\-]", "", str(value))
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
 
 
 # ── Google Cloud Vision OCR Fallback ──────────────────────────────────────
@@ -111,7 +136,8 @@ def _check_vision() -> bool:
         try:
             from google.cloud import vision  # noqa: F401
             _vision_available = True
-        except ImportError:
+        except Exception as exc:  # noqa: BLE001 - a broken install must not 500
+            logger.warning("google-cloud-vision unavailable: %s", exc)
             _vision_available = False
     return _vision_available
 
@@ -153,17 +179,14 @@ def extract_text_from_image_bytes(
         )
 
     from google.cloud import vision
-    from google.api_core.exceptions import GoogleAPICallError, InvalidArgument
 
     image = vision.Image(content=image_bytes)
-
-    try:
-        response: vision.AnnotateImageResponse = _get_client().text_detection(image=image)
-    except (GoogleAPICallError, InvalidArgument) as exc:
-        raise
+    response: vision.AnnotateImageResponse = _get_client().text_detection(image=image)
 
     if response.error.message:
-        raise GoogleAPICallError(response.error.message)
+        # ``GoogleAPICallError`` is an abstract base that cannot be instantiated
+        # with only a message — raise a plain runtime error the route can report.
+        raise RuntimeError(f"Google Vision error: {response.error.message}")
 
     if not response.text_annotations:
         return "", 0.0, None

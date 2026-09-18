@@ -71,6 +71,24 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = "qwen/qwen3.6-27b"
     GROQ_OCR_MODEL: str = "qwen/qwen3.6-27b"
 
+    # ── RAG / Vector store ────────────────────────────────────────────
+    CHROMA_DIR: str = Field(
+        default="./chroma_db",
+        description="Directory the persistent Chroma vector store lives in",
+    )
+    RAG_COLLECTION: str = Field(
+        default="finance_knowledge",
+        description="Name of the Chroma collection holding knowledge chunks",
+    )
+    RAG_TOP_K: int = Field(
+        default=3,
+        ge=1,
+        le=20,
+        description="Number of chunks retrieved per advisor question",
+    )
+    RAG_CHUNK_SIZE: int = Field(default=800, ge=100)
+    RAG_CHUNK_OVERLAP: int = Field(default=120, ge=0)
+
 
 
 # Singleton instance — import this everywhere in the application.

@@ -236,8 +236,12 @@ async def stream_llm(
                 resp.raise_for_status()
 
                 if provider == "groq":
-                    in_think_buffer = True
-                    think_acc = ""
+                    # Reasoning models (Qwen et al.) may open the reply with a
+                    # <think> block.  Buffer only until it is clear whether one
+                    # is present; anything still buffered when the stream ends
+                    # is flushed, so short replies are never swallowed.
+                    buffering = True
+                    buffer = ""
                     async for line in resp.aiter_lines():
                         line = line.strip()
                         if not line or not line.startswith("data: "):
@@ -247,25 +251,38 @@ async def stream_llm(
                             break
                         try:
                             data: dict[str, Any] = json.loads(data_str)
-                            delta = data.get("choices", [{}])[0].get("delta", {})
-                            content = delta.get("content", "")
-                            if not content:
-                                continue
+                            choices = data.get("choices") or [{}]
+                            content = (choices[0].get("delta") or {}).get("content", "")
+                        except (json.JSONDecodeError, AttributeError, IndexError, TypeError):
+                            continue
 
-                            if in_think_buffer:
-                                think_acc += content
-                                if "</think>" in think_acc:
-                                    content_after = think_acc.split("</think>", 1)[1]
-                                    in_think_buffer = False
-                                    if content_after:
-                                        yield content_after
-                                elif "<think>" not in think_acc and len(think_acc) > 20:
-                                    in_think_buffer = False
-                                    yield think_acc
-                            else:
-                                yield content
-                        except json.JSONDecodeError:
-                            pass
+                        if not content:
+                            continue
+
+                        if not buffering:
+                            yield content
+                            continue
+
+                        buffer += content
+
+                        if "</think>" in buffer:
+                            # Reasoning block closed — emit whatever followed it.
+                            buffering = False
+                            tail = buffer.split("</think>", 1)[1].lstrip()
+                            buffer = ""
+                            if tail:
+                                yield tail
+                        elif not "<think>".startswith(buffer.lstrip()[:7]):
+                            # The reply cannot be opening a <think> tag, so it is
+                            # ordinary text — stop buffering and release it.
+                            buffering = False
+                            tail, buffer = buffer, ""
+                            yield tail
+
+                    # Flush a reply that ended while still buffered (short answers,
+                    # or an unclosed reasoning block).
+                    if buffer and not buffer.lstrip().startswith("<think>"):
+                        yield buffer
                 else:
                     event_type: str | None = None
                     async for line in resp.aiter_lines():

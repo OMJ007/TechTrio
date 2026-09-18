@@ -163,6 +163,11 @@ async def delete_budget(
     stmt = select(Budget).where(Budget.id == budget_id, Budget.user_id == current_user.id)
     res = await session.execute(stmt)
     b = res.scalar_one_or_none()
-    if b:
-        await session.delete(b)
-        await session.commit()
+    if b is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Budget not found",
+        )
+
+    await session.delete(b)
+    await session.commit()

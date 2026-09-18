@@ -137,6 +137,11 @@ async def delete_goal(
     stmt = select(Goal).where(Goal.id == goal_id, Goal.user_id == current_user.id)
     res = await session.execute(stmt)
     g = res.scalar_one_or_none()
-    if g:
-        await session.delete(g)
-        await session.commit()
+    if g is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+
+    await session.delete(g)
+    await session.commit()

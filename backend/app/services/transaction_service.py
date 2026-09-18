@@ -12,8 +12,24 @@ from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionUpdate
 
 
+def _coerce_source(source: str | None) -> TransactionSource | None:
+    """Map a raw query-string value onto a :class:`TransactionSource` member.
+
+    The column is a SQLAlchemy ``Enum`` so it must be compared against an enum
+    member, not the raw string the client sends (``?source=ocr``).  Returns
+    ``None`` when the filter should be ignored.
+    """
+    if not source or source.strip().lower() == "all":
+        return None
+    try:
+        return TransactionSource(source.strip().lower())
+    except ValueError:
+        return None
+
+
 async def list_user_transactions(
     user_id: UUID,
+    session: AsyncSession,
     limit: int = 50,
     offset: int = 0,
     search: str | None = None,
@@ -21,7 +37,6 @@ async def list_user_transactions(
     payment_method: str | None = None,
     source: str | None = None,
     sort_by: str | None = "date_desc",
-    session: AsyncSession = None,
 ) -> list[Transaction]:
     """Retrieve transactions for a user with flexible filtering & sorting."""
     stmt = select(Transaction).where(Transaction.user_id == user_id)
@@ -41,8 +56,9 @@ async def list_user_transactions(
     if payment_method and payment_method.lower() != "all":
         stmt = stmt.where(Transaction.payment_method == payment_method)
 
-    if source:
-        stmt = stmt.where(Transaction.source == source)
+    source_filter = _coerce_source(source)
+    if source_filter is not None:
+        stmt = stmt.where(Transaction.source == source_filter)
 
     if sort_by == "amount_desc":
         stmt = stmt.order_by(Transaction.amount.desc())

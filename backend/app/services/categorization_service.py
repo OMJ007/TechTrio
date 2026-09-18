@@ -12,6 +12,8 @@ Strategy
 from __future__ import annotations
 
 import json
+import re
+from functools import lru_cache
 from typing import Any
 
 from app.agent import call_llm
@@ -84,17 +86,36 @@ async def categorize_transaction(
 
 # ── Rule engine ──────────────────────────────────────────────────────────
 
+@lru_cache(maxsize=1)
+def _compiled_rules() -> list[tuple[str, re.Pattern[str]]]:
+    """Compile each category's keywords into one word-boundary regex.
+
+    Plain substring matching produced false positives on short keywords —
+    "eat" fired on "great"/"theatre", "mart" on "smart", "gas" on "gasket".
+    Anchoring on word boundaries keeps multi-word keywords working while
+    removing the accidental hits.
+    """
+    rules: list[tuple[str, re.Pattern[str]]] = []
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        alternation = "|".join(
+            re.escape(keyword) for keyword in sorted(keywords, key=len, reverse=True)
+        )
+        rules.append(
+            (category, re.compile(rf"(?<!\w)(?:{alternation})(?!\w)", re.IGNORECASE))
+        )
+    return rules
+
+
 def _rule_match(merchant: str, raw_text: str) -> tuple[str | None, float]:
     """Check keyword rules against concatenated merchant + OCR text.
 
     Returns ``(category, 0.85)`` on match or ``(None, 0.0)``.
     """
-    corpus = (f"{merchant} {raw_text}").casefold()
+    corpus = f"{merchant} {raw_text}"
 
-    for category, keywords in CATEGORY_KEYWORDS.items():
-        for keyword in keywords:
-            if keyword in corpus:
-                return category, 0.85
+    for category, pattern in _compiled_rules():
+        if pattern.search(corpus):
+            return category, 0.85
 
     return None, 0.0
 

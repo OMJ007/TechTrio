@@ -17,6 +17,9 @@ ENV/
 backend/chroma_hnswlib*.tar.gz
 backend/uploads/
 
+# Vector store (rebuilt on first run)
+backend/chroma_db/
+
 # Node & Next.js
 node_modules/
 .next/
@@ -31,3 +34,6 @@ dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# Claude Code session data
+.claude/

@@ -97,8 +97,11 @@ async def upload_receipt(
         )
 
     if len(image_bytes) > 10 * 1024 * 1024:
+        # Literal 413: Starlette renamed the constant
+        # (HTTP_413_REQUEST_ENTITY_TOO_LARGE → HTTP_413_CONTENT_TOO_LARGE),
+        # so referencing either name breaks on one version or the other.
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=413,
             detail="Image exceeds the 10 MB size limit",
         )
 

@@ -5,15 +5,16 @@ making it fast, predictable, and easy to debug.
 """
 
 import re
-from collections.abc import Mapping
 from datetime import date
 from typing import Any
 
 
 # ── Amount patterns ──────────────────────────────────────────────────────
-# Currency-symbol prefix: ₹ Rs $ USD € £
+# Currency-symbol prefix: ₹ Rs. INR $ USD € £
+# NOTE: written as an alternation, not a character class — ``[₹Rs]{1,3}`` would
+# match any run of ₹/R/s (including "sss") and miss "INR"/"$" entirely.
 _CURRENCY_AMOUNT_RE = re.compile(
-    r"(?:[₹Rs]{1,3}|USD|EUR|GBP|€|£)\s*([\d,]+\.\d{2})",
+    r"(?:₹|Rs\.?|INR|\$|USD|€|EUR|£|GBP)\s*([\d,]+\.\d{2})",
     re.IGNORECASE,
 )
 # Standalone float (must be ≥ 1.00 to avoid false positives on years, dates)
@@ -136,18 +137,22 @@ def _extract_amount(full_text: str, lines: list[str]) -> float | None:
 # ── Merchant ─────────────────────────────────────────────────────────────
 
 def _is_noise_line(line: str) -> bool:
-    """Return ``True`` if *line* is unlikely to be a merchant name."""
+    """Return ``True`` if *line* is unlikely to be a merchant name.
+
+    Each clause is parenthesised: ``and`` binds tighter than ``or``, so the
+    unbracketed form silently grouped the phone check with the length check
+    and read very differently from how it looks.
+    """
     return bool(
         _LINE_IS_AMOUNT_RE.search(line)
-        or _LINE_IS_PHONE_RE.match(line)
-        and len(line) < 20
+        or (_LINE_IS_PHONE_RE.match(line) and len(line) < 20)
         or _LINE_IS_ADDRESS_RE.search(line)
         or _LINE_IS_DATE_RE.search(line)
         or _LINE_IS_URL_OR_EMAIL_RE.search(line)
         or _LINE_IS_GST_RE.search(line)
         or len(line) < 2
         or line.isdigit()
-        or line.isupper() and len(line) > 60
+        or (line.isupper() and len(line) > 60)
     )
 
 

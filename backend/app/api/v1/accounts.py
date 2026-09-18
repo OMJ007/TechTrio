@@ -66,6 +66,11 @@ async def delete_account(
     stmt = select(Account).where(Account.id == account_id, Account.user_id == current_user.id)
     res = await session.execute(stmt)
     acc = res.scalar_one_or_none()
-    if acc:
-        await session.delete(acc)
-        await session.commit()
+    if acc is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found",
+        )
+
+    await session.delete(acc)
+    await session.commit()

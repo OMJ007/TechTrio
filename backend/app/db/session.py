@@ -100,6 +100,12 @@ async def init_db() -> None:
     to SQLite so local development works seamlessly.
     """
     global engine, async_session_factory
+
+    # Importing the models package registers every table on ``Base.metadata``.
+    # Without it, ``create_all`` only sees the models that happen to have been
+    # imported by whichever routers loaded first.
+    from app import models  # noqa: F401  (import for side effects)
+
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
